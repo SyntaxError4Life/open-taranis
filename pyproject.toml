@@ -16,3 +16,6 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/open-taranis"]
