@@ -2,7 +2,7 @@ import openai
 import json
 import re
 
-__version__ = "0.0.1_genesis"
+__version__ = "0.0.2_genesis"
 
 class clients:
     @staticmethod
