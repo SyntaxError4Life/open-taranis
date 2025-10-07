@@ -60,16 +60,17 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 
 ## Roadmap
 
-- [X] v0.0.x: Add and confirm other API providers
-- [X] v0.1.x: Functionality verifications
+- [O]   v0.0.1: start
+- [X]   v0.0.x: Add and confirm other API providers
+- [X]   v0.1.x: Functionality verifications
 - [X] > v0.2.0: Add features for **logic-only coding** approach
-- [X] v0.6.x: Add llama.cpp as backend in addition to APIs
-- [X] v0.7.x: Add reverse proxy + server to create a dedicated full relay/backend (like OpenRouter), framework usable as server and client
-- [X] v0.8.x: Add PyTorch as backend with `transformers` to deploy a remote server
+- [X]   v0.6.x: Add llama.cpp as backend in addition to APIs
+- [X]   v0.7.x: Add reverse proxy + server to create a dedicated full relay/backend (like OpenRouter), framework usable as server and client
+- [X]   v0.8.x: Add PyTorch as backend with `transformers` to deploy a remote server
 - [X] > v0.9.0: Total reduction of dependencies for built-in functions (unless counter-optimizations)
-- [X] v1.0.0: First complete version in Python without dependencies
-- [X] v1.x.x: Reduce dependencies to Python for Rust backend
-- [X] v2.0.0: Backend totally in Rust
+- [X]   v1.0.0: First complete version in Python without dependencies
+- [X]   v1.x.x: Reduce dependencies to Python for Rust backend
+- [X]   v2.0.0: Backend totally in Rust
 
 ## Advanced Examples
 

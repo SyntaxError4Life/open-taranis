@@ -1,7 +1,7 @@
 import open_taranis as T
 print("program launched\n\n")
 
-# User database - contains only Jean Dupont's information
+# User database
 user_database = {
     "jean dupont": {
         "age": 45,
@@ -62,7 +62,7 @@ def get_user_info(name):
     """Fetch user information from the database by name (case-insensitive)"""
     return user_database.get(name.strip().lower(), "User not found in database")
 
-client = T.clients.openrouter("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")
+client = T.clients.openrouter("api_key")
 prompt = """Give me the information you have access to on the following users :
 - jean dupont
 - marie dubois
