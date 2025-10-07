@@ -38,29 +38,26 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 ├── __version__ = "0.0.3_genesis"
 │
 ├── clients
-│   ├── veniceai(api_key: str) -> openai.OpenAI
-│   ├── deepseek(api_key: str) -> openai.OpenAI
-│   ├── openrouter(api_key: str) -> openai.OpenAI
+│   ├── veniceai(api_key:str) -> openai.OpenAI
+│   ├── deepseek(api_key:str) -> openai.OpenAI
+│   ├── openrouter(api_key:str) -> openai.OpenAI
 │   │
-│   ├── veniceai_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, 
-│   │   max_tokens:int, tools: list[dict], include_venice_system_prompt:bool=False, **kwargs) -> openai.Stream
-│   ├── generic_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float,
-│   │   max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
-│   └── openrouter_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float,
-│       max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
+│   ├── veniceai_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools: list[dict], include_venice_system_prompt:bool=False, **kwargs) -> openai.Stream
+│   ├── generic_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
+│   └── openrouter_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
 │
-├── handle_streaming(stream: openai.Stream) -> generator(token: str or None, tool: list, tool_bool: bool)
-├── handle_tool_call(tool_call: dict) -> tuple[str, str, dict, str]
+├── handle_streaming(stream:openai.Stream) -> generator(token:str|None, tool:list, tool_bool:bool)
+├── handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str]
 │
-├── create_assistant_response(content: str, tool_calls: list[dict]=None) -> dict
-├── create_function_response(id: str, result: str, name: str) -> dict
-├── create_system_prompt(content: str) -> dict[str, str]
-└── create_user_prompt(content: str) -> dict[str, str]
+├── create_assistant_response(content:str, tool_calls:list[dict]) -> dict
+├── create_function_response(id:str, result:str, name:str) -> dict[str, str, str]
+├── create_system_prompt(content:str) -> dict[str, str]
+└── create_user_prompt(content:str) -> dict[str, str]
 ```
 
 ## Roadmap
 
-- [O]   v0.0.1: start
+- [ ]   v0.0.1: start
 - [X]   v0.0.x: Add and confirm other API providers
 - [X]   v0.1.x: Functionality verifications
 - [X] > v0.2.0: Add features for **logic-only coding** approach
