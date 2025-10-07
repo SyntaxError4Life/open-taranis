@@ -42,12 +42,9 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 │   ├── deepseek(api_key: str) -> openai.OpenAI
 │   ├── openrouter(api_key: str) -> openai.OpenAI
 │   │
-│   ├── veniceai_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, 
-│   │   max_tokens:int, tools: list[dict], include_venice_system_prompt:bool=False, **kwargs) -> openai.Stream
-│   ├── generic_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float,
-│   │   max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
-│   └── openrouter_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float,
-│       max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
+│   ├── veniceai_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools: list[dict], include_venice_system_prompt:bool=False, **kwargs) -> openai.Stream
+│   ├── generic_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
+│   └── openrouter_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
 │
 ├── handle_streaming(stream: openai.Stream) -> generator(token: str or None, tool: list, tool_bool: bool)
 ├── handle_tool_call(tool_call: dict) -> tuple[str, str, dict, str]
