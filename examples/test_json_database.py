@@ -62,7 +62,7 @@ def get_user_info(name):
     """Fetch user information from the database by name (case-insensitive)"""
     return user_database.get(name.strip().lower(), "User not found in database")
 
-client = T.clients.openrouter("api_key")
+client = T.clients.openrouter("You are a technical assistant who MUST use the get_user_info tool before answering questions about users")
 prompt = """Give me the information you have access to on the following users :
 - jean dupont
 - marie dubois
