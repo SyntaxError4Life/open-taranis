@@ -35,12 +35,14 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 
 ```bash
 .
-├── __version__ = "0.0.3_genesis"
+├── __version__ = "0.0.4_genesis"
 │
 ├── clients
 │   ├── veniceai(api_key:str) -> openai.OpenAI
 │   ├── deepseek(api_key:str) -> openai.OpenAI
 │   ├── openrouter(api_key:str) -> openai.OpenAI
+│   ├── xai(api_key:str) -> openai.OpenAI
+│   ├── groq(api_key:str) -> openai.OpenAI
 │   │
 │   ├── veniceai_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools: list[dict], include_venice_system_prompt:bool=False, **kwargs) -> openai.Stream
 │   ├── generic_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
@@ -68,6 +70,11 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 - [ ]   v1.0.0: First complete version in Python without dependencies
 - [ ]   v1.x.x: Reduce dependencies to Python for Rust backend
 - [ ]   v2.0.0: Backend totally in Rust
+
+## Changelog
+
+#### **v0.0.4** :
+- Add **xai** and **groq** provider
 
 ## Advanced Examples
 

@@ -2,20 +2,55 @@ import openai
 import json
 import re
 
-__version__ = "0.0.3_genesis"
+__version__ = "0.0.4_genesis"
 
 class clients:
+
+# ==============================
+# The clients with their URL
+# ==============================
+
     @staticmethod
     def veniceai(api_key: str) -> openai.OpenAI:
+        """
+        Use `clients.veniceai_request` for call
+        """
         return openai.OpenAI(api_key=api_key, base_url="https://api.venice.ai/api/v1")
     
     @staticmethod
     def deepseek(api_key: str) -> openai.OpenAI:
+        """
+        Use `clients.generic_request` for call
+        """
         return openai.OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
     
     @staticmethod
     def openrouter(api_key: str) -> openai.OpenAI:
+        """
+        Use `clients.openrouter_request` for call
+        """
         return openai.OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
+
+    @staticmethod
+    def xai(api_key: str) -> openai.OpenAI:
+        """
+        Use `clients.generic_request` for call
+        """
+        return openai.OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
+
+    @staticmethod
+    def groq(api_key: str) -> openai.OpenAI:
+        """
+        Use `clients.generic_request` for call
+        """
+        return openai.OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
+
+
+# ==============================
+# Customers for calls with their specifications
+#
+# Like "include_venice_system_prompt" for venice.ai or custom app for openrouter
+# ==============================
 
     @staticmethod
     def veniceai_request(client: openai.OpenAI, messages: list[dict], model:str="defaut", temperature:float=0.7, max_tokens:int=4096, tools:list[dict]=None, include_venice_system_prompt:bool=False, **kwargs) -> openai.Stream:
@@ -48,28 +83,6 @@ class clients:
         params = {**base_params, **tool_params, **venice_params}
         
         return client.chat.completions.create(**params)
-    
-    @staticmethod
-    def generic_request(client: openai.OpenAI, messages: list[dict], model:str="defaut", temperature:float=0.7, max_tokens:int=4096, tools:list[dict]=None, **kwargs) -> openai.Stream:
-        base_params = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "max_completion_tokens": kwargs.get("max_completion_tokens", 4096),
-            "stream": kwargs.get("stream", True),
-        }
-        
-        tool_params = {}
-        if tools :
-            tool_params = {
-                "tools": tools,
-                "tool_choice": kwargs.get("tool_choice", "auto")
-            }
-        
-        params = {**base_params, **tool_params}
-        
-        return client.chat.completions.create(**params)
 
     @staticmethod
     def openrouter_request(client: openai.OpenAI, messages: list[dict], model:str="defaut", temperature:float=0.7, max_tokens:int=4096, tools:list[dict]=None, **kwargs) -> openai.Stream:
@@ -98,6 +111,32 @@ class clients:
                 "X-Title": "Zanomega/open-taranis"
             }
         )
+
+    @staticmethod
+    def generic_request(client: openai.OpenAI, messages: list[dict], model:str="defaut", temperature:float=0.7, max_tokens:int=4096, tools:list[dict]=None, **kwargs) -> openai.Stream:
+        base_params = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "max_completion_tokens": kwargs.get("max_completion_tokens", 4096),
+            "stream": kwargs.get("stream", True),
+        }
+        
+        tool_params = {}
+        if tools :
+            tool_params = {
+                "tools": tools,
+                "tool_choice": kwargs.get("tool_choice", "auto")
+            }
+        
+        params = {**base_params, **tool_params}
+        
+        return client.chat.completions.create(**params)
+
+# ==============================
+# Functions for the streaming
+# ==============================
 
 def handle_streaming(stream: openai.Stream):
     """
@@ -199,7 +238,11 @@ def handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str] :
 
     return fid, fname, args, ""
 
-def create_assistant_response(content:str, tool_calls:list[dict]=None) -> dict:
+# ==============================
+# Functions to simplify the messages roles
+# ==============================
+
+def create_assistant_response(content:str, tool_calls:list[dict]=None) -> dict[str, str]:
     """
     Creates an assistant message, optionally with tool calls.
     

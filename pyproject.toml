@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "open-taranis"
-version = "0.0.3" 
+version = "0.0.4" 
 description = "Minimalist Python framework for AI agents logic-only coding with streaming, tool calls, and multi-LLM provider support"
 authors = [{name = "SyntaxError4Life", email = "lilian@zanomega.com"}]
 dependencies = ["openai"]
