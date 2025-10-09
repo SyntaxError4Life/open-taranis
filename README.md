@@ -60,7 +60,7 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 ## Roadmap
 
 - [X]   v0.0.1: start
-- [ ]   v0.0.x: Add and confirm other API providers
+- [X]   v0.0.x: Add and confirm other API providers (in the cloud, not locally)
 - [ ]   v0.1.x: Functionality verifications
 - [ ] > v0.2.0: Add features for **logic-only coding** approach
 - [ ]   v0.6.x: Add llama.cpp as backend in addition to APIs
