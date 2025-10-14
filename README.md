@@ -35,7 +35,7 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 
 ```bash
 .
-├── __version__ = "0.0.5", "genesis"
+├── __version__ = "0.0.6", "genesis"
 │
 ├── clients
 │   ├── veniceai(api_key:str) -> openai.OpenAI
