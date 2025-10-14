@@ -62,7 +62,7 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 
 - [X]   v0.0.1: start
 - [X]   v0.0.x: Add and confirm other API providers (in the cloud, not locally)
-- [X]   v0.1.x: Functionality verifications ([examples](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/))
+- [X]   v0.1.x: Functionality verifications in [examples](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/)
 - [ ] > v0.2.0: Add features for **logic-only coding** approach
 - [ ]   v0.6.x: Add llama.cpp as backend in addition to APIs
 - [ ]   v0.7.x: Add reverse proxy + server to create a dedicated full relay/backend (like OpenRouter), framework usable as server and client
