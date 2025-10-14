@@ -35,7 +35,7 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 
 ```bash
 .
-├── __version__ = "0.0.4_genesis"
+├── __version__ = "0.0.5", "genesis"
 │
 ├── clients
 │   ├── veniceai(api_key:str) -> openai.OpenAI
@@ -43,10 +43,11 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 │   ├── openrouter(api_key:str) -> openai.OpenAI
 │   ├── xai(api_key:str) -> openai.OpenAI
 │   ├── groq(api_key:str) -> openai.OpenAI
+│   ├── huggingface(api_key:str) -> openai.OpenAI
 │   │
-│   ├── veniceai_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools: list[dict], include_venice_system_prompt:bool=False, **kwargs) -> openai.Stream
-│   ├── generic_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
-│   └── openrouter_request(client:openai.OpenAI, messages:list[dict], model:str, temperature:float, max_tokens:int, tools:list[dict], **kwargs) -> openai.Stream
+│   ├── veniceai_request(client, messages, model, temperature, max_tokens, tools, include_venice_system_prompt, enable_web_search, enable_web_citations, disable_thinking, **kwargs) -> openai.Stream
+│   ├── generic_request(client, messages, model, temperature, max_tokens, tools, **kwargs) -> openai.Stream
+│   └── openrouter_request(client, messages, model, temperature, max_tokens, tools, **kwargs) -> openai.Stream
 │
 ├── handle_streaming(stream:openai.Stream) -> generator(token:str|None, tool:list[dict]|None, tool_bool:bool)
 ├── handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str]
@@ -61,7 +62,7 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 
 - [X]   v0.0.1: start
 - [X]   v0.0.x: Add and confirm other API providers (in the cloud, not locally)
-- [ ]   v0.1.x: Functionality verifications
+- [X]   v0.1.x: Functionality verifications
 - [ ] > v0.2.0: Add features for **logic-only coding** approach
 - [ ]   v0.6.x: Add llama.cpp as backend in addition to APIs
 - [ ]   v0.7.x: Add reverse proxy + server to create a dedicated full relay/backend (like OpenRouter), framework usable as server and client
@@ -73,8 +74,8 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 
 ## Changelog
 
-#### **v0.0.4** :
-- Add **xai** and **groq** provider
+- **v0.0.4** : Add **xai** and **groq** provider
+- **v0.0.5** : Add **huggingface** provider and args for **clients.veniceai_request**
 
 ## Advanced Examples
 

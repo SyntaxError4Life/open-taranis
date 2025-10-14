@@ -2,7 +2,7 @@ import openai
 import json
 import re
 
-__version__ = "0.0.4_genesis"
+__version__ = "0.0.5", "genesis"
 
 class clients:
 
@@ -36,7 +36,7 @@ class clients:
         """
         Use `clients.generic_request` for call
         """
-        return openai.OpenAI(api_key=api_key, base_url="https://api.x.ai/v1")
+        return openai.OpenAI(api_key=api_key, base_url="https://api.x.ai/v1", timeout=3600)
 
     @staticmethod
     def groq(api_key: str) -> openai.OpenAI:
@@ -44,7 +44,13 @@ class clients:
         Use `clients.generic_request` for call
         """
         return openai.OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
-
+    
+    @staticmethod
+    def huggingface(api_key: str) -> openai.OpenAI:
+        """
+        Use `clients.generic_request` for call
+        """
+        return openai.OpenAI(api_key=api_key, base_url="https://router.huggingface.co/v1")
 
 # ==============================
 # Customers for calls with their specifications
@@ -53,7 +59,13 @@ class clients:
 # ==============================
 
     @staticmethod
-    def veniceai_request(client: openai.OpenAI, messages: list[dict], model:str="defaut", temperature:float=0.7, max_tokens:int=4096, tools:list[dict]=None, include_venice_system_prompt:bool=False, **kwargs) -> openai.Stream:
+    def veniceai_request(client: openai.OpenAI, messages: list[dict], 
+                        model:str="venice-uncensored", temperature:float=0.7, max_tokens:int=4096, tools:list[dict]=None, 
+                        include_venice_system_prompt:bool=False, 
+                        enable_web_search:bool=False,
+                        enable_web_citations:bool=False,
+                        disable_thinking:bool=False,
+                        **kwargs) -> openai.Stream:
         base_params = {
             "model": model,
             "messages": messages,
@@ -70,22 +82,23 @@ class clients:
                 "tool_choice": kwargs.get("tool_choice", "auto")
             }
         
-        venice_params = {}
-        if not include_venice_system_prompt :
-            venice_params = {
-                "extra_body": {
-                    "venice_parameters": {
-                        "include_venice_system_prompt": False
-                    }
+        venice_params = {
+            "extra_body": {
+                "venice_parameters": {
+                    "include_venice_system_prompt" : include_venice_system_prompt,
+                    "enable_web_search" : "on" if enable_web_search else "off",
+                    "enable_web_citations" : enable_web_citations,
+                    "disable_thinking" : disable_thinking
                 }
             }
+        }
         
         params = {**base_params, **tool_params, **venice_params}
         
         return client.chat.completions.create(**params)
 
     @staticmethod
-    def openrouter_request(client: openai.OpenAI, messages: list[dict], model:str="defaut", temperature:float=0.7, max_tokens:int=4096, tools:list[dict]=None, **kwargs) -> openai.Stream:
+    def openrouter_request(client: openai.OpenAI, messages: list[dict], model:str="nvidia/nemotron-nano-9b-v2:free", temperature:float=0.7, max_tokens:int=4096, tools:list[dict]=None, **kwargs) -> openai.Stream:
         base_params = {
             "model": model,
             "messages": messages,
@@ -159,7 +172,7 @@ def handle_streaming(stream: openai.Stream):
             continue
 
         # Handle content streaming
-        if delta.content:
+        if delta.content :
             yield delta.content, [], False
 
         # Handle tool calls in delta
@@ -216,7 +229,7 @@ def handle_streaming(stream: openai.Stream):
             }
             for call in accumulated_tool_calls.values()
         ]
-    yield None, tool_calls, len(tool_calls) > 0
+    yield "", tool_calls, len(tool_calls) > 0
 
 def handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str] :
     """
@@ -266,6 +279,3 @@ def create_system_prompt(content:str) -> dict[str, str] :
 
 def create_user_prompt(content:str) -> dict[str, str] :
     return {"role":"user", "content":content}
-
-
-# Thank to grok.com <3
