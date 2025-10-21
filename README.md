@@ -69,8 +69,6 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 - [ ]   v0.8.x: Add PyTorch as backend with `transformers` to deploy a remote server
 - [ ]   v0.9.x: Total reduction of dependencies for built-in functions (unless counter-optimizations)
 - [ ]   v1.0.0: First complete version in Python without dependencies
-- [ ]   v1.x.x: Reduce dependencies to Python for Rust backend
-- [ ]   v2.0.0: Backend totally in Rust
 
 ## Changelog
 
