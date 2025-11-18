@@ -2,13 +2,33 @@ import openai
 import json
 import re
 
-__version__ = "0.0.6", "genesis"
+__version__ = "0.1.0"
+
+import requests
+from packaging import version
+
+if True : # You can disable it btw
+    try:
+        response = requests.get("https://pypi.org/pypi/open-taranis/json", timeout=0.1)
+        response.raise_for_status()
+        latest_version = response.json()["info"]["version"]
+        if version.parse(latest_version) > version.parse(__version__):
+            print(f'New version {latest_version} available for open-taranis !\nUpdate via "pip install -U open-taranis"')
+    except Exception:
+        pass
 
 class clients:
 
 # ==============================
 # The clients with their URL
 # ==============================
+
+    @staticmethod
+    def generic(api_key:str, base_url:str) -> openai.OpenAI:
+        """
+        Use `clients.generic_request` for call
+        """
+        return openai.OpenAI(api_key=api_key, base_url=base_url)
 
     @staticmethod
     def veniceai(api_key: str) -> openai.OpenAI:
@@ -23,13 +43,6 @@ class clients:
         Use `clients.generic_request` for call
         """
         return openai.OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
-    
-    @staticmethod
-    def openrouter(api_key: str) -> openai.OpenAI:
-        """
-        Use `clients.openrouter_request` for call
-        """
-        return openai.OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
 
     @staticmethod
     def xai(api_key: str) -> openai.OpenAI:
@@ -51,12 +64,41 @@ class clients:
         Use `clients.generic_request` for call
         """
         return openai.OpenAI(api_key=api_key, base_url="https://router.huggingface.co/v1")
+    
+    @staticmethod
+    def openrouter(api_key: str) -> openai.OpenAI:
+        """
+        Use `clients.openrouter_request` for call
+        """
+        return openai.OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")   
 
 # ==============================
 # Customers for calls with their specifications
 #
 # Like "include_venice_system_prompt" for venice.ai or custom app for openrouter
 # ==============================
+
+    @staticmethod
+    def generic_request(client: openai.OpenAI, messages: list[dict], model:str="defaut", temperature:float=0.7, max_tokens:int=4096, tools:list[dict]=None, **kwargs) -> openai.Stream:
+        base_params = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "max_completion_tokens": kwargs.get("max_completion_tokens", 4096),
+            "stream": kwargs.get("stream", True),
+        }
+        
+        tool_params = {}
+        if tools :
+            tool_params = {
+                "tools": tools,
+                "tool_choice": kwargs.get("tool_choice", "auto")
+            }
+        
+        params = {**base_params, **tool_params}
+        
+        return client.chat.completions.create(**params)
 
     @staticmethod
     def veniceai_request(client: openai.OpenAI, messages: list[dict], 
@@ -120,32 +162,10 @@ class clients:
         return client.chat.completions.create(
             **params,
             extra_headers={
-                "HTTP-Referer": "https://zanomega.com/",
+                "HTTP-Referer": "https://zanomega.com/open-taranis/",
                 "X-Title": "Zanomega/open-taranis"
             }
         )
-
-    @staticmethod
-    def generic_request(client: openai.OpenAI, messages: list[dict], model:str="defaut", temperature:float=0.7, max_tokens:int=4096, tools:list[dict]=None, **kwargs) -> openai.Stream:
-        base_params = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "max_completion_tokens": kwargs.get("max_completion_tokens", 4096),
-            "stream": kwargs.get("stream", True),
-        }
-        
-        tool_params = {}
-        if tools :
-            tool_params = {
-                "tools": tools,
-                "tool_choice": kwargs.get("tool_choice", "auto")
-            }
-        
-        params = {**base_params, **tool_params}
-        
-        return client.chat.completions.create(**params)
 
 # ==============================
 # Functions for the streaming
@@ -279,3 +299,16 @@ def create_system_prompt(content:str) -> dict[str, str] :
 
 def create_user_prompt(content:str) -> dict[str, str] :
     return {"role":"user", "content":content}
+
+# ==============================
+# Agents coding (v0.2.0)
+# ==============================
+
+# class Agent():
+#     def __init__(self):
+#         pass
+#
+#    def __call__(self):
+#        pass
+#
+#    ...

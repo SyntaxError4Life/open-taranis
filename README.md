@@ -33,30 +33,7 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 
 ## Documentation :
 
-```bash
-.
-├── __version__ = "0.0.6", "genesis"
-│
-├── clients
-│   ├── veniceai(api_key:str) -> openai.OpenAI
-│   ├── deepseek(api_key:str) -> openai.OpenAI
-│   ├── openrouter(api_key:str) -> openai.OpenAI
-│   ├── xai(api_key:str) -> openai.OpenAI
-│   ├── groq(api_key:str) -> openai.OpenAI
-│   ├── huggingface(api_key:str) -> openai.OpenAI
-│   │
-│   ├── veniceai_request(client, messages, model, temperature, max_tokens, tools, include_venice_system_prompt, enable_web_search, enable_web_citations, disable_thinking, **kwargs) -> openai.Stream
-│   ├── generic_request(client, messages, model, temperature, max_tokens, tools, **kwargs) -> openai.Stream
-│   └── openrouter_request(client, messages, model, temperature, max_tokens, tools, **kwargs) -> openai.Stream
-│
-├── handle_streaming(stream:openai.Stream) -> generator(token:str|None, tool:list[dict]|None, tool_bool:bool)
-├── handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str]
-│
-├── create_assistant_response(content:str, tool_calls:list[dict]=None) -> dict[str, str]
-├── create_function_response(id:str, result:str, name:str) -> dict[str, str, str]
-├── create_system_prompt(content:str) -> dict[str, str]
-└── create_user_prompt(content:str) -> dict[str, str]
-```
+- [Base of the docs](https://zanomega.com/open-taranis/) (coding some things before the real docs)
 
 ## Roadmap
 
@@ -74,6 +51,7 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 
 - **v0.0.4** : Add **xai** and **groq** provider
 - **v0.0.6** : Add **huggingface** provider and args for **clients.veniceai_request**
+- **v0.1.0** : Start the **docs**, add **update-checker** and preparing for the continuation of the project...
 
 ## Advanced Examples
 
