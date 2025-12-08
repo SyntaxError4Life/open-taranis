@@ -2,7 +2,7 @@ import openai
 import json
 import re
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 import requests
 from packaging import version

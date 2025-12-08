@@ -22,13 +22,29 @@ messages = [
 stream = T.clients.openrouter_request(
     client=client,
     messages=messages,
-    model="qwen/qwen3-4b:free", 
+    model="mistralai/mistral-7b-instruct:free", 
 )
 
 print("assistant : ",end="")
 for token, tool, tool_bool in T.handle_streaming(stream) : 
     if token :
         print(token, end="")
+```
+
+To create a simple display using gradio as backend :
+```python
+import open_taranis as T
+import open_taranis.web_front as W
+
+W.gr.ChatInterface(
+    fn=W.chat_fn_gradio(
+    client=T.clients.openrouter(api_key="api_key"),
+    request=T.clients.openrouter_request,
+    model="mistralai/mistral-7b-instruct:free",
+    _system_prompt=""
+).create_fn(),
+    title="web front"
+).launch()
 ```
 
 ## Documentation :
@@ -52,6 +68,7 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 - **v0.0.4** : Add **xai** and **groq** provider
 - **v0.0.6** : Add **huggingface** provider and args for **clients.veniceai_request**
 - **v0.1.0** : Start the **docs**, add **update-checker** and preparing for the continuation of the project...
+- **v0.1.1** : Code to deploy a **frontend with gradio** added (no complex logic at the moment, ex: tool_calls)
 
 ## Advanced Examples
 
