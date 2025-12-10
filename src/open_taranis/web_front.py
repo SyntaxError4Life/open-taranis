@@ -1,5 +1,6 @@
 import gradio as gr
 import open_taranis as T
+from time import time
 
 class chat_fn_gradio:
     def __init__(self, 
@@ -46,6 +47,10 @@ class chat_fn_gradio:
             
             # Here we use our own internal memory rather than that of the gradio :
             self.memory.append(T.create_user_prompt(message))
+            is_thinking = False
+
+            tempo_time = 0.0
+            time_thinking = 0.0
 
             stream = self.create_stream(
                 self._system_prompt+self.memory # We make the system prompt adaptable and never at the beginning of the memory
@@ -53,18 +58,31 @@ class chat_fn_gradio:
 
             partial = ""
             token_nb = 0
+
             for token, _, _ in T.handle_streaming(stream):
                 if token :
-                    partial += token
+
+                    if "<think>" in token or not is_thinking :
+                        tempo_time = time()
+                    if "<think>" in token or is_thinking :
+                        is_thinking = True
+
+                        if "</think>" in token :
+                            time_thinking = time() - tempo_time 
+                            is_thinking = False
+
+                    else : partial += token
                     token_nb += 1
 
-                    yield f"""Tokens : {token_nb}
+                    # ====================================
+                    yield f"""Tokens : {token_nb} 
 Model : {self.model}
 
 ---
-
-{partial}"""
+{f"**Think : {time_thinking:.4f}s**\n\n---\n\n" if time_thinking!=0.0 else ""}
+{f"**Thinking for {(time() - tempo_time):.4f}s....**" if is_thinking else partial}"""
+                    
+                    # ====================================
             self.memory.append(T.create_assistant_response(partial))
-            print(partial)
             return
         return fn

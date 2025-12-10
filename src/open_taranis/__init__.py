@@ -2,7 +2,7 @@ import openai
 import json
 import re
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 import requests
 from packaging import version
@@ -163,9 +163,161 @@ class clients:
             **params,
             extra_headers={
                 "HTTP-Referer": "https://zanomega.com/open-taranis/",
-                "X-Title": "Zanomega/open-taranis"
+                "X-Title": "open-taranis"
             }
         )
+
+# ==============================
+# ollama, experimental and non-mandatory installation
+# ==============================
+
+try:
+    import ollama # Code by Grok 4.1 on Venice.ai
+
+    @staticmethod
+    def ollama_request(messages: list[dict], model: str="Qwen3:4b", temperature: float=0.4, max_tokens: int=4096, tools: list[dict]=None, **kwargs):
+        """
+        Streaming requests with Ollama (local).
+        Returns OpenAI-compatible ChatCompletionChunk stream for handle_streaming.
+        Supports tool calls.
+        """
+        import time
+        import json
+
+        # OpenAI-compatible classes for handle_streaming
+        class Function:
+            def __init__(self, name="", arguments=""):
+                self.name = name
+                self.arguments = arguments
+
+        class ToolCall:
+            def __init__(self, index=0, id="", type="function", function=None):
+                self.index = index
+                self.id = id
+                self.type = type
+                self.function = function or Function()
+
+        class Delta:
+            def __init__(self, content="", tool_calls=None, finish_reason=None):
+                self.content = content
+                self.tool_calls = tool_calls
+                self.finish_reason = finish_reason
+
+        class Choice:
+            def __init__(self, index=0, delta=None, finish_reason=None):
+                self.index = index
+                self.delta = delta or Delta()
+                self.finish_reason = finish_reason
+
+        class Chunk:
+            def __init__(self, id="", object="chat.completion.chunk", model="", choices=None, created=0):
+                self.id = id
+                self.object = object
+                self.model = model
+                self.choices = choices or []
+                self.created = created
+
+        # Transform messages from OpenAI format to Ollama format
+        ollama_messages = []
+        for msg in messages:
+            new_msg = dict(msg)
+
+            # Transform tool_calls in assistant messages (OpenAI → Ollama)
+            if "tool_calls" in new_msg and new_msg["tool_calls"]:
+                transformed_tool_calls = []
+                for tc in new_msg["tool_calls"]:
+                    args = tc.get("function", {}).get("arguments", "{}")
+                    # Ollama wants dict, OpenAI sends string JSON
+                    if isinstance(args, str):
+                        try:
+                            args = json.loads(args)
+                        except json.JSONDecodeError:
+                            args = {}
+                    # Ollama doesn't want id/type, only function
+                    transformed_tool_calls.append({
+                        "function": {
+                            "name": tc.get("function", {}).get("name", ""),
+                            "arguments": args
+                        }
+                    })
+                new_msg["tool_calls"] = transformed_tool_calls
+
+            ollama_messages.append(new_msg)
+
+        # Map parameters to Ollama options format
+        options = {
+            "temperature": temperature,
+            "num_predict": max_tokens,
+        }
+        if "max_completion_tokens" in kwargs:
+            options["num_predict"] = kwargs["max_completion_tokens"]
+        # Add other options from kwargs (exclude non-ollama params)
+        for key, value in kwargs.items():
+            if key not in ["tool_choice", "stream", "max_completion_tokens", "client"]:
+                options[key] = value
+
+        params = {
+            "model": model,
+            "messages": ollama_messages,
+            "options": options,
+            "stream": True,
+        }
+        if tools:
+            params["tools"] = tools
+
+        ollama_stream = ollama.chat(**params)
+
+        base_time = int(time.time())
+        chunk_id = f"chatcmpl-ollama-{base_time}"
+        generated_ids = {}
+
+        for ollama_chunk in ollama_stream:
+            message = ollama_chunk.get("message", {})
+            content = message.get("content", "")
+            tool_calls_raw = message.get("tool_calls") or []
+
+            # Transform tool_calls: Ollama dict → OpenAI object format
+            tool_calls_transformed = None
+            if tool_calls_raw:
+                tool_calls_transformed = []
+                for i, tc in enumerate(tool_calls_raw):
+                    if i not in generated_ids:
+                        generated_ids[i] = f"call_{i}_{base_time}"
+
+                    func_data = tc.get("function", {})
+
+                    # Handle arguments: Ollama returns dict, OpenAI expects JSON string
+                    args = func_data.get("arguments", "")
+                    if isinstance(args, dict):
+                        args = json.dumps(args)
+
+                    function_obj = Function(
+                        name=func_data.get("name", ""),
+                        arguments=args
+                    )
+                    tool_call_obj = ToolCall(
+                        index=i,
+                        id=generated_ids[i],
+                        type="function",
+                        function=function_obj
+                    )
+                    tool_calls_transformed.append(tool_call_obj)
+
+            # Final chunk
+            if ollama_chunk.get("done", False):
+                delta = Delta(content="", tool_calls=None, finish_reason="stop")
+                choice = Choice(0, delta, "stop")
+                yield Chunk(chunk_id, model=model, choices=[choice], created=base_time)
+                break
+
+            # Yield content or tool_calls
+            if content or tool_calls_transformed:
+                delta = Delta(content=content, tool_calls=tool_calls_transformed)
+                choice = Choice(0, delta)
+                yield Chunk(chunk_id, model=model, choices=[choice], created=base_time)
+
+except:
+    pass
 
 # ==============================
 # Functions for the streaming
@@ -207,9 +359,11 @@ def handle_streaming(stream: openai.Stream):
                         "arg_chunks": []  # New: list for arguments
                     }
                     arg_chunks[index] = []
-                if tool_call.function:
                     if tool_call.function.name:
-                        accumulated_tool_calls[index]["function"]["name"] += tool_call.function.name
+                        # Ollama sends full name each chunk, OpenAI sends incrementally
+                        if accumulated_tool_calls[index]["function"]["name"] == "":
+                            accumulated_tool_calls[index]["function"]["name"] = tool_call.function.name
+                        # else: skip (already set, don't +=)
                     if tool_call.function.arguments:
                         # Append to list instead of +=
                         arg_chunks[index].append(tool_call.function.arguments)
