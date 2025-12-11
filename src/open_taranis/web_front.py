@@ -44,6 +44,9 @@ class chat_fn_gradio:
             # Gradio chat function
             #   Gradio sends:  message, history
         def fn(message, history, *args):
+
+            if history == []: # Reset memory
+                self.memory = []
             
             # Here we use our own internal memory rather than that of the gradio :
             self.memory.append(T.create_user_prompt(message))

@@ -2,7 +2,12 @@ import openai
 import json
 import re
 
-__version__ = "0.1.2"
+# For the python function to JSON/dict
+import inspect
+from typing import Any, Callable, Literal, Union, get_args, get_origin
+
+
+__version__ = "0.1.3"
 
 import requests
 from packaging import version
@@ -16,6 +21,121 @@ if True : # You can disable it btw
             print(f'New version {latest_version} available for open-taranis !\nUpdate via "pip install -U open-taranis"')
     except Exception:
         pass
+
+# ==============================
+# 
+# ==============================
+
+class utils:
+    def _parse_simple_docstring(doc: str | None) -> dict[str, Any]:
+        """Parse docstring minimal (description + args)."""
+        result = {"description": "", "args": {}}
+        if not doc:
+            return result
+        
+        # Extract main description (first paragraph)
+        parts = inspect.cleandoc(doc).split('\n\n', 1)
+        result["description"] = parts[0].strip()
+        
+        # Simple args parsing (Google/NumPy style)
+        if len(parts) > 1:
+            args_section = parts[1].split('Args:')[-1].split('Returns:')[0].split('Raises:')[0]
+            lines = [l.strip() for l in args_section.split('\n') if l.strip()]
+            
+            for line in lines:
+                if ':' in line and not line.startswith(' '):
+                    # Format: "arg_name: description" or "arg_name (type): description"
+                    arg_match = re.match(r'(\w+)\s*(?:\([^)]*\))?\s*:\s*(.+)', line)
+                    if arg_match:
+                        arg_name, desc = arg_match.groups()
+                        result["args"][arg_name] = desc.strip()
+        
+        return result
+
+    def _python_type_to_schema(py_type: Any) -> dict[str, Any]:
+        """Convert Python type to JSON Schema - MINIMAL version."""
+        origin = get_origin(py_type)
+        args = get_args(py_type)
+        
+        # Optional: Union[X, None]
+        if origin is Union and type(None) in args:
+            non_none = [a for a in args if a is not type(None)]
+            if len(non_none) == 1:
+                schema = utils._python_type_to_schema(non_none[0])
+                schema["nullable"] = True
+                return schema
+        
+        # Literal for enums
+        if origin is Literal:
+            return {"type": "string", "enum": list(args)}
+        
+        # Basic types
+        if py_type in (str, int, float, bool, type(None)):
+            type_map = {str: "string", int: "integer", float: "number", bool: "boolean", type(None): "null"}
+            return {"type": type_map[py_type]}
+        
+        # Collections
+        if origin in (list,):
+            item_schema = {"type": "string"}  # Default
+            if args:
+                item_schema = utils._python_type_to_schema(args[0])
+            return {"type": "array", "items": item_schema}
+        
+        if origin in (dict,):
+            return {"type": "object"}
+        
+        # Default fallback
+        return {"type": "string"}
+
+    def function_to_openai_tool(func: Callable) -> dict[str, Any]:
+        """Convert Python function to OpenAI tool format - MINIMAL."""
+        sig = inspect.signature(func)
+        type_hints = func.__annotations__
+        
+        # Parse docstring
+        doc_info = utils._parse_simple_docstring(func.__doc__ or "")
+        
+        # Build schema
+        properties = {}
+        required = []
+        
+        for param_name, param in sig.parameters.items():
+            # Get type annotation
+            py_type = type_hints.get(param_name, str)
+            schema = utils._python_type_to_schema(py_type)
+            
+            # Add description from docstring
+            if param_name in doc_info["args"]:
+                schema["description"] = doc_info["args"][param_name]
+            
+            # Handle defaults
+            if param.default is not inspect.Parameter.empty:
+                schema["default"] = param.default
+                if param.default is None:
+                    schema["nullable"] = True
+            else:
+                required.append(param_name)
+            
+            properties[param_name] = schema
+        
+        return {
+            "type": "function",
+            "function": {
+                "name": func.__name__,
+                "description": doc_info["description"],
+                "parameters": {
+                    "type": "object",
+                    "properties": properties,
+                    "required": required,
+                    "additionalProperties": False
+                }
+            }
+        }
+
+# Utility for multiple functions, code by Kimi k2 thinking
+def functions_to_tools(funcs: list[Callable]) -> list[dict[str, Any]]:
+    return [utils.function_to_openai_tool(f) for f in funcs]
+
 
 class clients:
 
@@ -72,8 +192,15 @@ class clients:
         """
         return openai.OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")   
 
+    @staticmethod
+    def ollama() -> openai.OpenAI:
+        """
+        Use `clients.generic_request` for call
+        """
+        return openai.OpenAI(api_key="", base_url="http://localhost:11434/v1")   
+
 # ==============================
-# Customers for calls with their specifications
+# Customers for calls with their specifications"
 #
 # Like "include_venice_system_prompt" for venice.ai or custom app for openrouter
 # ==============================
@@ -166,158 +293,6 @@ class clients:
                 "X-Title": "open-taranis"
             }
         )
-
-# ==============================
-# ollama, experimental and non-mandatory installation
-# ==============================
-
-try:
-    import ollama # Code by Grok 4.1 on Venice.ai
-
-    @staticmethod
-    def ollama_request(messages: list[dict], model: str="Qwen3:4b", temperature: float=0.4, max_tokens: int=4096, tools: list[dict]=None, **kwargs):
-        """
-        Streaming requests with Ollama (local).
-        Returns OpenAI-compatible ChatCompletionChunk stream for handle_streaming.
-        Supports tool calls.
-        """
-        import time
-        import json
-
-        # OpenAI-compatible classes for handle_streaming
-        class Function:
-            def __init__(self, name="", arguments=""):
-                self.name = name
-                self.arguments = arguments
-
-        class ToolCall:
-            def __init__(self, index=0, id="", type="function", function=None):
-                self.index = index
-                self.id = id
-                self.type = type
-                self.function = function or Function()
-
-        class Delta:
-            def __init__(self, content="", tool_calls=None, finish_reason=None):
-                self.content = content
-                self.tool_calls = tool_calls
-                self.finish_reason = finish_reason
-
-        class Choice:
-            def __init__(self, index=0, delta=None, finish_reason=None):
-                self.index = index
-                self.delta = delta or Delta()
-                self.finish_reason = finish_reason
-
-        class Chunk:
-            def __init__(self, id="", object="chat.completion.chunk", model="", choices=None, created=0):
-                self.id = id
-                self.object = object
-                self.model = model
-                self.choices = choices or []
-                self.created = created
-
-        # Transform messages from OpenAI format to Ollama format
-        ollama_messages = []
-        for msg in messages:
-            new_msg = dict(msg)
-
-            # Transform tool_calls in assistant messages (OpenAI → Ollama)
-            if "tool_calls" in new_msg and new_msg["tool_calls"]:
-                transformed_tool_calls = []
-                for tc in new_msg["tool_calls"]:
-                    args = tc.get("function", {}).get("arguments", "{}")
-                    # Ollama wants dict, OpenAI sends string JSON
-                    if isinstance(args, str):
-                        try:
-                            args = json.loads(args)
-                        except json.JSONDecodeError:
-                            args = {}
-                    # Ollama doesn't want id/type, only function
-                    transformed_tool_calls.append({
-                        "function": {
-                            "name": tc.get("function", {}).get("name", ""),
-                            "arguments": args
-                        }
-                    })
-                new_msg["tool_calls"] = transformed_tool_calls
-
-            ollama_messages.append(new_msg)
-
-        # Map parameters to Ollama options format
-        options = {
-            "temperature": temperature,
-            "num_predict": max_tokens,
-        }
-        if "max_completion_tokens" in kwargs:
-            options["num_predict"] = kwargs["max_completion_tokens"]
-        # Add other options from kwargs (exclude non-ollama params)
-        for key, value in kwargs.items():
-            if key not in ["tool_choice", "stream", "max_completion_tokens", "client"]:
-                options[key] = value
-
-        params = {
-            "model": model,
-            "messages": ollama_messages,
-            "options": options,
-            "stream": True,
-        }
-        if tools:
-            params["tools"] = tools
-
-        ollama_stream = ollama.chat(**params)
-
-        base_time = int(time.time())
-        chunk_id = f"chatcmpl-ollama-{base_time}"
-        generated_ids = {}
-
-        for ollama_chunk in ollama_stream:
-            message = ollama_chunk.get("message", {})
-            content = message.get("content", "")
-            tool_calls_raw = message.get("tool_calls") or []
-
-            # Transform tool_calls: Ollama dict → OpenAI object format
-            tool_calls_transformed = None
-            if tool_calls_raw:
-                tool_calls_transformed = []
-                for i, tc in enumerate(tool_calls_raw):
-                    if i not in generated_ids:
-                        generated_ids[i] = f"call_{i}_{base_time}"
-
-                    func_data = tc.get("function", {})
-
-                    # Handle arguments: Ollama returns dict, OpenAI expects JSON string
-                    args = func_data.get("arguments", "")
-                    if isinstance(args, dict):
-                        args = json.dumps(args)
-
-                    function_obj = Function(
-                        name=func_data.get("name", ""),
-                        arguments=args
-                    )
-                    tool_call_obj = ToolCall(
-                        index=i,
-                        id=generated_ids[i],
-                        type="function",
-                        function=function_obj
-                    )
-                    tool_calls_transformed.append(tool_call_obj)
-
-            # Final chunk
-            if ollama_chunk.get("done", False):
-                delta = Delta(content="", tool_calls=None, finish_reason="stop")
-                choice = Choice(0, delta, "stop")
-                yield Chunk(chunk_id, model=model, choices=[choice], created=base_time)
-                break
-
-            # Yield content or tool_calls
-            if content or tool_calls_transformed:
-                delta = Delta(content=content, tool_calls=tool_calls_transformed)
-                choice = Choice(0, delta)
-                yield Chunk(chunk_id, model=model, choices=[choice], created=base_time)
-
-except:
-    pass
 
 # ==============================
 # Functions for the streaming

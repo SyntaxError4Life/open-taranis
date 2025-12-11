@@ -70,6 +70,7 @@ W.gr.ChatInterface(
 - **v0.1.0** : Start the **docs**, add **update-checker** and preparing for the continuation of the project...
 - **v0.1.1** : Code to deploy a **frontend with gradio** added (no complex logic at the moment, ex: tool_calls)
 - **v0.1.2** : Fixed a display bug in the **web_front** and experimentally added **ollama as a backend**
+- **v0.1.3** : Fixed the memory reset in the **web_front** and remove **ollama module** for **openai front** (work 100 times better)
 
 ## Advanced Examples
 
