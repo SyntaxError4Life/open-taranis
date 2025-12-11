@@ -41,26 +41,13 @@ user_database = {
     }
 }
 
-# Tool definition - describes the get_user_info function available to the model
-tools = [{
-    "type": "function",
-    "function": {
-        "name": "get_user_info",
-        "description": "Access the employee database",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "name": {"type": "string", "description": "Full name of the employee to look up"}
-            },
-            "required": ["name"]
-        }
-    }
-}]
-
 # Function implementation - retrieves user data from our database
 def get_user_info(name):
     """Fetch user information from the database by name (case-insensitive)"""
     return user_database.get(name.strip().lower(), "User not found in database")
+
+# Tool definition - describes the get_user_info function available to the model
+tools = T.functions_to_tools([get_user_info])
 
 client = T.clients.openrouter("API_KEY")
 prompt = """Give me the information you have access to on the following users :
