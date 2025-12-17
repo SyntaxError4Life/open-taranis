@@ -1,6 +1,4 @@
-import gradio as gr
 import open_taranis as T
-from time import time
 
 class chat_fn_gradio:
     def __init__(self, 
@@ -15,29 +13,16 @@ class chat_fn_gradio:
         self.model = model
         self._system_prompt = [{"role":"system", "content":_system_prompt}]
 
-        self.meta = {
-            "defaut_create_stream_used":False
-        }
-        self.memory = []
-
     def create_stream(self, messages):
         """
         TO IMPLEMENT
-
-        ```
-        if self.meta["defaut_create_stream_used"]==False : # Just used to detect, must be rewritten by the user
-            print("Classic create_stream method used !")
-            self.meta=True
-
-        return self.request(self.client,messages=messages,model=self.model)
-        ```
-
         """
-        if self.meta["defaut_create_stream_used"]==False : # Just used to detect, must be rewritten by the user
-            print("Classic create_stream method used !")
-            self.meta=True
 
-        return self.request(self.client,messages=messages,model=self.model)
+        return self.request(
+            self.client,
+            messages=messages,
+            model=self.model
+        )
 
     def create_fn(self):
 
@@ -45,47 +30,38 @@ class chat_fn_gradio:
             #   Gradio sends:  message, history
         def fn(message, history, *args):
 
-            if history == []: # Reset memory
-                self.memory = []
-            
-            # Here we use our own internal memory rather than that of the gradio :
-            self.memory.append(T.create_user_prompt(message))
-            is_thinking = False
+            messages=[]
 
-            tempo_time = 0.0
-            time_thinking = 0.0
+            for user, assistant in history :
+                messages.append(T.create_user_prompt(user))
+                messages.append(T.create_assistant_response(assistant))   
+            messages.append(T.create_user_prompt(message))    
+            
+
+            stream = self.request(
+                self.client,
+                messages=self._system_prompt+messages,
+                model=self.model
+            )
 
             stream = self.create_stream(
-                self._system_prompt+self.memory # We make the system prompt adaptable and never at the beginning of the memory
+                messages=messages
             )
 
             partial = ""
-            token_nb = 0
+            is_thinking = False
 
             for token, _, _ in T.handle_streaming(stream):
                 if token :
 
-                    if "<think>" in token or not is_thinking :
-                        tempo_time = time()
                     if "<think>" in token or is_thinking :
                         is_thinking = True
 
                         if "</think>" in token :
-                            time_thinking = time() - tempo_time 
                             is_thinking = False
 
                     else : partial += token
-                    token_nb += 1
 
-                    # ====================================
-                    yield f"""Tokens : {token_nb} 
-Model : {self.model}
-
----
-{f"**Think : {time_thinking:.4f}s**\n\n---\n\n" if time_thinking!=0.0 else ""}
-{f"**Thinking for {(time() - tempo_time):.4f}s....**" if is_thinking else partial}"""
-                    
-                    # ====================================
-            self.memory.append(T.create_assistant_response(partial))
+                    yield partial
             return
         return fn

@@ -1,6 +1,6 @@
 # open-taranis
 
-Minimalist Python framework for AI agents logic-only coding with streaming, tool calls, and multi-LLM provider support.
+Python framework for AI agents logic-only coding with streaming, tool calls, and multi-LLM provider support.
 
 ## Installation
 
@@ -35,13 +35,14 @@ To create a simple display using gradio as backend :
 ```python
 import open_taranis as T
 import open_taranis.web_front as W
+import gradio as gr
 
-W.gr.ChatInterface(
+gr.ChatInterface(
     fn=W.chat_fn_gradio(
-    client=T.clients.openrouter(api_key="api_key"),
+    client=T.clients.openrouter(API_KEY),
     request=T.clients.openrouter_request,
     model="mistralai/mistral-7b-instruct:free",
-    _system_prompt=""
+    _system_prompt="You are an agent named **Taranis**"
 ).create_fn(),
     title="web front"
 ).launch()
@@ -71,6 +72,7 @@ W.gr.ChatInterface(
 - **v0.1.1** : Code to deploy a **frontend with gradio** added (no complex logic at the moment, ex: tool_calls)
 - **v0.1.2** : Fixed a display bug in the **web_front** and experimentally added **ollama as a backend**
 - **v0.1.3** : Fixed the memory reset in the **web_front** and remove **ollama module** for **openai front** (work 100 times better)
+- **v0.1.4** : Fixed `web_front` for native use on huggingface, as well as `handle_streaming` which had tool retrieval issues
 
 ## Advanced Examples
 

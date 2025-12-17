@@ -7,7 +7,7 @@ import inspect
 from typing import Any, Callable, Literal, Union, get_args, get_origin
 
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 import requests
 from packaging import version
@@ -334,11 +334,9 @@ def handle_streaming(stream: openai.Stream):
                         "arg_chunks": []  # New: list for arguments
                     }
                     arg_chunks[index] = []
+                if tool_call.function:
                     if tool_call.function.name:
-                        # Ollama sends full name each chunk, OpenAI sends incrementally
-                        if accumulated_tool_calls[index]["function"]["name"] == "":
-                            accumulated_tool_calls[index]["function"]["name"] = tool_call.function.name
-                        # else: skip (already set, don't +=)
+                        accumulated_tool_calls[index]["function"]["name"] += tool_call.function.name
                     if tool_call.function.arguments:
                         # Append to list instead of +=
                         arg_chunks[index].append(tool_call.function.arguments)
@@ -379,6 +377,7 @@ def handle_streaming(stream: openai.Stream):
             for call in accumulated_tool_calls.values()
         ]
     yield "", tool_calls, len(tool_calls) > 0
+
 
 def handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str] :
     """
