@@ -18,29 +18,26 @@ LOGO_ASCII = """
 ████  █████  ████  ██  ███  ███  ████  ██  ██    █████  ███████████  █
 ████  █████  ████  ██  ████  ██  ████  ██  ███   ██        ███      ██"""
 
-# Contraintes minimales
+
 MIN_HEIGHT = 24
 MIN_WIDTH = 80
 
 def run(stdscr):
-    # Configuration basique de curses
-    curses.curs_set(1) # Curseur visible
+    curses.curs_set(1)
     curses.start_color()
     curses.use_default_colors()
     
-    # Initialisation des paires de couleurs
-    curses.init_pair(1, curses.COLOR_RED, -1)   # Pour le logo
-    curses.init_pair(2, curses.COLOR_WHITE, -1) # Pour le texte standard
-    curses.init_pair(3, curses.COLOR_YELLOW, -1)# Pour les erreurs
+    curses.init_pair(1, curses.COLOR_RED, -1)
+    curses.init_pair(2, curses.COLOR_WHITE, -1)
+    curses.init_pair(3, curses.COLOR_YELLOW, -1)
     
     input_buffer = ""
-    display_mode = "NONE" # États possibles : "NONE", "HELP", "API", etc.
+    display_mode = "NONE"
+    text = []
     
     while True:
-        # Récupération dynamique des dimensions du terminal
         height, width = stdscr.getmaxyx()
         
-        # Vérification des contraintes minimales
         if height < MIN_HEIGHT or width < MIN_WIDTH:
             stdscr.clear()
             msg = f"Terminal too small: {width}x{height} (min {MIN_WIDTH}x{MIN_HEIGHT})"
@@ -55,12 +52,7 @@ def run(stdscr):
                 break
             continue
         
-        # Nettoyage de l'écran pour le rafraîchissement
         stdscr.clear()
-        
-        # --- Calcul dynamique du Layout ---
-        
-        # 1. Traitement du Logo (Haut Gauche)
         logo_lines = LOGO_ASCII.split('\n')
         logo_height = len(logo_lines)
         
@@ -72,11 +64,9 @@ def run(stdscr):
                 except curses.error:
                     pass
         
-        # 2. Zone de Contenu (Centre)
         content_start = logo_height + 1
         content_end = height - 3
         
-        # --- Affichage du contenu central selon le mode ---
         if display_mode == "HELP":
             text = [
                 "Commands :",
@@ -100,7 +90,7 @@ def run(stdscr):
         
         elif display_mode == 'MORE_API':
             text = [
-                "APIs registered :",
+                "APIs and env_var",
                 "- openrouter  = 'OPENROUTER_API'",
                 "- huggingface = 'HF_API'",
                 "- venice.ai   = 'VENICEAI_API'",
@@ -119,8 +109,6 @@ def run(stdscr):
                         pass
                     current_line += 1
         
-        
-        # 3. Footer / Invite de commande (Bas)
         sep_y = height - 2
         input_y = height - 1
         
@@ -141,13 +129,12 @@ def run(stdscr):
         
         stdscr.refresh()
         
-        # --- Gestion des entrées clavier ---
         key = stdscr.getch()
         
         if key == curses.KEY_RESIZE:
             continue
             
-        elif key in (10, 13): # Entrée
+        elif key in (10, 13):
             command = input_buffer.strip()
             
             if command == "/exit":
@@ -163,18 +150,17 @@ def run(stdscr):
                 display_mode = 'MORE_API'
             
             else:
-                # Commande invalide ou vide : on efface l'affichage central
                 display_mode = None
             
             input_buffer = ""
             
-        elif key in (127, curses.KEY_BACKSPACE, ord('\b')): # Backspace
+        elif key in (127, curses.KEY_BACKSPACE, ord('\b')):
             input_buffer = input_buffer[:-1]
             
-        elif key == 27: # Échap
+        elif key == 27:
             input_buffer = ""
             
-        elif 32 <= key <= 126: # Caractères imprimables ASCII
+        elif 32 <= key <= 126:
             input_buffer += chr(key)
 
 # ==============================
@@ -193,13 +179,11 @@ def main():
 """)
 
     elif argv[1] == "open":
-        # Lancement de la boucle curses
         curses.wrapper(run)
 
     elif argv[1] == "update":
         print("Updating open-taranis via pip...")
         try:
-            # On lance pip install -U sur le paquet actuel
             subprocess.check_call([sys.executable, "-m", "pip", "install", "-U", "open-taranis"])
             print("Update successful.")
         except subprocess.CalledProcessError as e:

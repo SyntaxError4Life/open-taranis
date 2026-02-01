@@ -48,6 +48,19 @@ gr.ChatInterface(
 ).launch()
 ```
 
+---
+
+## Use the commands :
+
+- `taranis help` : in the name...
+- `taranis update` : upgrade the framework
+- `taranis open` : open the TUI
+
+### The TUI :
+![TUI](images/TUI.png)
+
+- `/help` to start
+
 ## Documentation :
 
 - [Base of the docs](https://zanomega.com/open-taranis/) (coding some things before the real docs)
@@ -58,11 +71,7 @@ gr.ChatInterface(
 - [X]   v0.0.x: Add and confirm other API providers (in the cloud, not locally)
 - [X]   v0.1.x: Functionality verifications in [examples](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/)
 - [ ] > v0.2.0: Add features for **logic-only coding** approach
-- [ ]   v0.6.x: Add llama.cpp as backend in addition to APIs
-- [ ]   v0.7.x: Add reverse proxy + server to create a dedicated full relay/backend (like OpenRouter), framework usable as server and client
-- [ ]   v0.8.x: Add PyTorch as backend with `transformers` to deploy a remote server
-- [ ]   v0.9.x: Total reduction of dependencies for built-in functions (unless counter-optimizations)
-- [ ]   v1.0.0: First complete version in Python without dependencies
+- The rest will follow soon.
 
 ## Changelog
 
@@ -73,6 +82,7 @@ gr.ChatInterface(
 - **v0.1.2** : Fixed a display bug in the **web_front** and experimentally added **ollama as a backend**
 - **v0.1.3** : Fixed the memory reset in the **web_front** and remove **ollama module** for **openai front** (work 100 times better)
 - **v0.1.4** : Fixed `web_front` for native use on huggingface, as well as `handle_streaming` which had tool retrieval issues
+- **v0.1.5** : Added a **TUI** and **commands**, detection of **env variables** (API keys) and tools in the framework
 
 ## Advanced Examples
 
