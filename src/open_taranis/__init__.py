@@ -1,13 +1,13 @@
 import openai
 import json
 import re
+import os
 
 # For the python function to JSON/dict
 import inspect
 from typing import Any, Callable, Literal, Union, get_args, get_origin
 
-
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 import requests
 from packaging import version
@@ -151,45 +151,57 @@ class clients:
         return openai.OpenAI(api_key=api_key, base_url=base_url)
 
     @staticmethod
-    def veniceai(api_key: str) -> openai.OpenAI:
+    def veniceai(api_key: str=None) -> openai.OpenAI:
         """
         Use `clients.veniceai_request` for call
         """
+        if os.environ.get('VENICEAI_API') :
+            api_key = os.environ.get('VENICEAI_API')
         return openai.OpenAI(api_key=api_key, base_url="https://api.venice.ai/api/v1")
     
     @staticmethod
-    def deepseek(api_key: str) -> openai.OpenAI:
+    def deepseek(api_key: str=None) -> openai.OpenAI:
         """
         Use `clients.generic_request` for call
         """
+        if os.environ.get('DEEPSEEK_API') :
+            api_key = os.environ.get('DEEPSEEK_API')
         return openai.OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 
     @staticmethod
-    def xai(api_key: str) -> openai.OpenAI:
+    def xai(api_key: str=None) -> openai.OpenAI:
         """
         Use `clients.generic_request` for call
         """
+        if os.environ.get('XAI_API') :
+            api_key = os.environ.get('XAI_API')
         return openai.OpenAI(api_key=api_key, base_url="https://api.x.ai/v1", timeout=3600)
 
     @staticmethod
-    def groq(api_key: str) -> openai.OpenAI:
+    def groq(api_key: str=None) -> openai.OpenAI:
         """
         Use `clients.generic_request` for call
         """
+        if os.environ.get('GROQ_API') :
+            api_key = os.environ.get('GROQ_API')
         return openai.OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
     
     @staticmethod
-    def huggingface(api_key: str) -> openai.OpenAI:
+    def huggingface(api_key: str=None) -> openai.OpenAI:
         """
         Use `clients.generic_request` for call
         """
+        if os.environ.get('HF_API') :
+            os.environ.get('HF_API')
         return openai.OpenAI(api_key=api_key, base_url="https://router.huggingface.co/v1")
     
     @staticmethod
-    def openrouter(api_key: str) -> openai.OpenAI:
+    def openrouter(api_key: str=None) -> openai.OpenAI:
         """
         Use `clients.openrouter_request` for call
         """
+        if os.environ.get('OPENROUTER_API') :
+            os.environ.get('OPENROUTER_API') 
         return openai.OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")   
 
     @staticmethod
@@ -378,7 +390,6 @@ def handle_streaming(stream: openai.Stream):
         ]
     yield "", tool_calls, len(tool_calls) > 0
 
-
 def handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str] :
     """
     Return :
@@ -432,11 +443,6 @@ def create_user_prompt(content:str) -> dict[str, str] :
 # Agents coding (v0.2.0)
 # ==============================
 
-# class Agent():
-#     def __init__(self):
-#         pass
-#
-#    def __call__(self):
-#        pass
-#
-#    ...
+class agent:
+    def __init__(self):
+        pass

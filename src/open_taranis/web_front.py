@@ -59,6 +59,9 @@ class chat_fn_gradio:
 
                         if "</think>" in token :
                             is_thinking = False
+                    
+                        yield "Thinking...."
+                        continue
 
                     else : partial += token
 

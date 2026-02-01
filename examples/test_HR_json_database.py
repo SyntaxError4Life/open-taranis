@@ -49,7 +49,7 @@ def get_user_info(name, field=None):
         return {f: user.get(f, "Field not found") for f in fields}
     return user
 
-client = T.clients.openrouter(API_KEY)
+client = T.clients.openrouter("API_KEY")
 
 # System prompt with user list
 system_prompt = f"You are a HR assistant who MUST use the get_user_info tool before answering questions about users. Available users: {user_list}."
