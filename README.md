@@ -57,7 +57,7 @@ gr.ChatInterface(
 - `taranis open` : open the TUI
 
 ### The TUI :
-![TUI](images/TUI.png)
+![TUI](img/TUI.png)
 
 - `/help` to start
 
