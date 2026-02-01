@@ -82,12 +82,13 @@ gr.ChatInterface(
 - **v0.1.2** : Fixed a display bug in the **web_front** and experimentally added **ollama as a backend**
 - **v0.1.3** : Fixed the memory reset in the **web_front** and remove **ollama module** for **openai front** (work 100 times better)
 - **v0.1.4** : Fixed `web_front` for native use on huggingface, as well as `handle_streaming` which had tool retrieval issues
-- **v0.1.5** : Added a **TUI** and **commands**, detection of **env variables** (API keys) and tools in the framework
+- **v0.1.7** : Added a **TUI** and **commands**, detection of **env variables** (API keys) and tools in the framework
 
 ## Advanced Examples
 
 - [tools call in a JSON database](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/test_json_database.py)
 - [tools call in a HR JSON database in multi-rounds](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/test_HR_json_database.py)
+- [simple search agent with Brave API](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/brave_research.py)
 
 ## Links
 

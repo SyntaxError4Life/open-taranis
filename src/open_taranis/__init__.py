@@ -7,7 +7,7 @@ import os
 import inspect
 from typing import Any, Callable, Literal, Union, get_args, get_origin
 
-__version__ = "0.1.5"
+__version__ = "0.1.7"
 
 import requests
 from packaging import version
@@ -201,7 +201,7 @@ class clients:
         Use `clients.openrouter_request` for call
         """
         if os.environ.get('OPENROUTER_API') :
-            os.environ.get('OPENROUTER_API') 
+            api_key = os.environ.get('OPENROUTER_API')
         return openai.OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")   
 
     @staticmethod
