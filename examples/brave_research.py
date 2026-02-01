@@ -41,7 +41,7 @@ while run :
                 results=brave_research(
                     web_request=args["web_request"],
                     count=5,
-                    country="fr"
+                    country="en"
                 )
 
                 for item in results["web"]["results"]:
