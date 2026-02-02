@@ -7,7 +7,7 @@ import os
 import inspect
 from typing import Any, Callable, Literal, Union, get_args, get_origin
 
-__version__ = "0.1.7"
+__version__ = "0.2.0"
 
 import requests
 from packaging import version
@@ -192,7 +192,7 @@ class clients:
         Use `clients.generic_request` for call
         """
         if os.environ.get('HF_API') :
-            os.environ.get('HF_API')
+            api_key = os.environ.get('HF_API')
         return openai.OpenAI(api_key=api_key, base_url="https://router.huggingface.co/v1")
     
     @staticmethod
@@ -440,9 +440,89 @@ def create_user_prompt(content:str) -> dict[str, str] :
     return {"role":"user", "content":content}
 
 # ==============================
-# Agents coding (v0.2.0)
+# Agents base
 # ==============================
 
-class agent:
+class agent_base:
     def __init__(self):
+
+        self._system_prompt = [create_system_prompt(None)]
+        self.messages = []
+
+        self.meta = {
+            "create_stream":True
+        }
+    
+    def create_stream(self):
+        """
+        # TO IMPLEMENT
+
+        like this :
+        ```python
+        return clients.Your_request(
+            client=clients.Your,
+            messages=self._system_prompt+self.messages, # Need to be keep !
+            model="Yout model"
+        )
+        ```
+        but with your customisation
+
+        Yout can define your client in `__init__()`
+        """
+
+        if self.meta["create_stream"]:
+            raise "You MUST define 'agent_base.create_stream()'"
+
+        
+
+    def manage_user_prompt(self, prompt):
+        """
+        # TO IMPLEMENT if needed
+        """
+
+        return prompt
+
+    def manage_assistant_response(self, response):
+        """
+        # TO IMPLEMENT if needed
+        """
+
+        return response
+
+    def manage_messages(self):
+        """
+        Example to always store only the 2 lasts turns :
+        ```python
+        self.messages = self.messages[-4:]
+        ```
+        """
         pass
+
+    def execute_tools(self, tool_calls):
+        pass
+
+    def __call__(self, prompt):
+
+
+        run = True
+
+        self.messages.append(create_user_prompt(
+            self.manage_user_prompt(prompt)
+        ))
+        
+        while run :
+
+            respond = ""
+            for token, tool_calls, run in handle_streaming(self.create_stream()) :
+                if token :
+                    yield token
+                    respond += token
+            
+            self.messages.append(create_assistant_response(
+                self.manage_assistant_response(respond)
+            ))
+
+            self.manage_messages()
+
+            if run:
+                self.execute_tools(tool_calls)

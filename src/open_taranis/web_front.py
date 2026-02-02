@@ -20,7 +20,7 @@ class chat_fn_gradio:
 
         return self.request(
             self.client,
-            messages=messages,
+            messages=self._system_prompt+messages,
             model=self.model
         )
 
@@ -36,13 +36,6 @@ class chat_fn_gradio:
                 messages.append(T.create_user_prompt(user))
                 messages.append(T.create_assistant_response(assistant))   
             messages.append(T.create_user_prompt(message))    
-            
-
-            stream = self.request(
-                self.client,
-                messages=self._system_prompt+messages,
-                model=self.model
-            )
 
             stream = self.create_stream(
                 messages=messages
