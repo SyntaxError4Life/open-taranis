@@ -7,7 +7,7 @@ import os
 import inspect
 from typing import Any, Callable, Literal, Union, get_args, get_origin
 
-__version__ = "0.2.0"
+__version__ = "0.2.0b"
 
 import requests
 from packaging import version
@@ -18,7 +18,7 @@ if True : # You can disable it btw
         response.raise_for_status()
         latest_version = response.json()["info"]["version"]
         if version.parse(latest_version) > version.parse(__version__):
-            print(f'New version {latest_version} available for open-taranis !\nUpdate via "pip install -U open-taranis"')
+            print(f'New (stable) version {latest_version} available for open-taranis !\nUpdate via "pip install -U open-taranis"')
     except Exception:
         pass
 
@@ -310,6 +310,7 @@ class clients:
 # Functions for the streaming
 # ==============================
 
+@staticmethod
 def handle_streaming(stream: openai.Stream):
     """
     return :
@@ -390,6 +391,7 @@ def handle_streaming(stream: openai.Stream):
         ]
     yield "", tool_calls, len(tool_calls) > 0
 
+@staticmethod
 def handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str] :
     """
     Return :
@@ -414,6 +416,7 @@ def handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str] :
 # Functions to simplify the messages roles
 # ==============================
 
+@staticmethod
 def create_assistant_response(content:str, tool_calls:list[dict]=None) -> dict[str, str]:
     """
     Creates an assistant message, optionally with tool calls.
@@ -428,14 +431,17 @@ def create_assistant_response(content:str, tool_calls:list[dict]=None) -> dict[s
     if tool_calls : return {"role": "assistant","content": content,"tool_calls": tool_calls}
     return {"role": "assistant","content": content}
 
+@staticmethod
 def create_function_response(id:str, result:str, name:str) -> dict[str, str, str]:
     if not id or not name:
         raise ValueError("id and name are required")
     return {"role": "tool", "content": json.dumps(result), "tool_call_id": id, "name": name}
 
+@staticmethod
 def create_system_prompt(content:str) -> dict[str, str] :
     return {"role":"system", "content":content}
 
+@staticmethod
 def create_user_prompt(content:str) -> dict[str, str] :
     return {"role":"user", "content":content}
 
@@ -446,8 +452,9 @@ def create_user_prompt(content:str) -> dict[str, str] :
 class agent_base:
     def __init__(self):
 
-        self._system_prompt = [create_system_prompt(None)]
+        self._system_prompt = [create_system_prompt("")]
         self.messages = []
+        self.tools = []
 
         self.meta = {
             "create_stream":True
@@ -462,7 +469,8 @@ class agent_base:
         return clients.Your_request(
             client=clients.Your,
             messages=self._system_prompt+self.messages, # Need to be keep !
-            model="Yout model"
+            model="Yout model",
+            tools=self.tools
         )
         ```
         but with your customisation
@@ -471,9 +479,7 @@ class agent_base:
         """
 
         if self.meta["create_stream"]:
-            raise "You MUST define 'agent_base.create_stream()'"
-
-        
+            raise "You MUST define 'agent_base.create_stream()'"   
 
     def manage_user_prompt(self, prompt):
         """
@@ -489,20 +495,37 @@ class agent_base:
 
         return response
 
-    def manage_messages(self):
+    def manage_messages_in_reply(self):
         """
-        Example to always store only the 2 lasts turns :
+        Function to manage message history, executed at each step (after agent response or tool call)
+
+
+        ```
+        """
+        pass
+
+    def manage_messages_after_reply(self):
+        """
+        Message history management function, executed after each reply
+
+        Ex:
+        - Compress messages
+        - Reduce to the last X
+        - And more...
+
+        ---
+
+        Example to always store only the 2 lasts turns (without tools !) :
         ```python
         self.messages = self.messages[-4:]
         ```
         """
         pass
 
-    def execute_tools(self, tool_calls):
-        pass
+    def execute_tools(self, fname, args):
+        raise NotImplementedError("Subclasses must implement execute_tools()")
 
     def __call__(self, prompt):
-
 
         run = True
 
@@ -512,17 +535,29 @@ class agent_base:
         
         while run :
 
-            respond = ""
+            response = ""
             for token, tool_calls, run in handle_streaming(self.create_stream()) :
                 if token :
                     yield token
-                    respond += token
+                    response += token
             
             self.messages.append(create_assistant_response(
-                self.manage_assistant_response(respond)
+                self.manage_assistant_response(response)
             ))
 
-            self.manage_messages()
-
             if run:
-                self.execute_tools(tool_calls)
+                self.messages.append(create_assistant_response(response, tool_calls))
+
+                for tool_call in tool_calls :
+                    fid, fname, args, _ = handle_tool_call(tool_call)
+
+                    result = self.execute_tools(fname, args)
+
+                    self.messages.append(create_function_response(
+                        id=fid, result=result, name=fname
+                    ))
+            
+            self.manage_messages_in_reply()
+            
+        self.messages.append(create_assistant_response(response))
+        self.manage_messages_after_reply()
