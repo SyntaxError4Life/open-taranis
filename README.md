@@ -126,7 +126,7 @@ while True :
 - [X]   v0.0.1: start
 - [X]   v0.0.x: Add and confirm other API providers (in the cloud, not locally)
 - [X]   v0.1.x: Functionality verifications in [examples](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/)
-- [ ] > v0.2.0: Add features for **logic-only coding** approach, start with `agent_base`
+- [X] > v0.2.0: Add features for **logic-only coding** approach, start with `agent_base`
 - [ ]   v0.3.x: Add a full agent in **TUI** and upgrade web client **deployments**
 - The rest will follow soon.
 
