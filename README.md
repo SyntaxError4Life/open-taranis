@@ -151,6 +151,7 @@ while True :
 <details><summary><b>v0.2.x : Agents</b></summary>
 
 - **v0.2.0** : Adding `agent_base`
+- **v0.2.1** : Updated `agent_base` and added a more concrete example of agents
 </details>   
 
 
@@ -159,6 +160,7 @@ while True :
 - [tools call in a JSON database](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/test_json_database.py)
 - [tools call in a HR JSON database in multi-rounds](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/test_HR_json_database.py)
 - [simple search agent with Brave API](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/brave_research.py)
+- [full auto search agent with Brave API](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/brave_research_loop.py)
 
 ## Links
 

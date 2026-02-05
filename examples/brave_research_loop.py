@@ -1,11 +1,19 @@
+MODEL = "stepfun/step-3.5-flash:free"
+# Recommend GLM 4.7 but not free...
+
+# Coded in v0.2.1
+
+# ==============================================================
+
 import open_taranis as T
-from open_taranis.tools import brave_research, fast_scraping
+from open_taranis.tools import fast_scraping, brave_research
 
-client = T.clients.openrouter(api_key=None)
-request = T.clients.openrouter_request
+class Brave_Agent(T.agent_base):
+    def __init__(self):
+        super().__init__()
 
-messages = [
-    T.create_system_prompt("""You are an expert, autonomous web research assistant. Your role is to use your web search tools to answer the user's questions with precision and thoroughness.
+        self.client = T.clients.openrouter()
+        self._system_prompt = [T.create_system_prompt("""You are an expert, autonomous web research assistant. Your role is to use your web search tools to answer the user's questions with precision and thoroughness.
 
 ## General Behavior Rules
 - Be objective, concise, and factual in your responses.
@@ -44,63 +52,84 @@ messages = [
 - If you cannot find information after several attempts, inform the user detailing your unsuccessful searches.
 
 Your ultimate goal is to provide a **complete, exact, and sourced** answer using all available web navigation capabilities.
-"""),
-    T.create_user_prompt(input("Request : "))
-]
+"""
+        )]
 
-run = True
+        self.tools = T.functions_to_tools([
+            fast_scraping,brave_research
+        ])
 
-while run :
-    respond=""
+
+    def create_stream(self):
+        return T.clients.openrouter_request(
+            client=self.client,
+            messages=self._system_prompt+self.messages,
+            model=MODEL,
+            tools=self.tools,
+        )
     
-    for token, tool_calls, run in T.handle_streaming(request(
-        client=client,messages=messages,model="stepfun/step-3.5-flash:free",
-        tools=T.functions_to_tools([brave_research,fast_scraping])
-    )):
-        if token :
-            print(token, end="")
-            respond+=token
+    def execute_tools(self, fname, args):
+        if fname == "fast_scraping":
 
-    if run :
-        messages.append(T.create_assistant_response(respond, tool_calls))
-
-        for tool_call in tool_calls :
-            fid, fname, args, _ = T.handle_tool_call(tool_call)
-            tool_response=""
-
-            if fname == "fast_scraping":
-
-                print("\n","="*60)
-                print(f"{fname} : {args["url"]}")
-                print("="*60,"\n")
-                
-                tool_response = fast_scraping(url=args["url"])
+            print("\n","="*60)
+            print(f"{fname} : {args["url"]}")
+            print("="*60,"\n")
             
-            elif fname == "brave_research":
-                print("\n","="*60)
-                print(f"{fname} : {args["web_request"]}")
-                print("="*60,"\n")
-
-                tool_response = ""
-                results = brave_research(web_request=args["web_request"], count=5, country="US")
-
-                try :
-                    # Ensure results contains 'web' and 'results' keys
-                    web_data = results.get("web", {})
-                    
-                    if "results" not in web_data:
-                        tool_response = "No results found in web search."
-                    else:
-                        for item in web_data["results"]:
-                            tool_response += f"{item['title']} : {item['url']}\n"
-                
-                except : # When brave_research return an error message in str
-                    print(f"Search error : {results}")
-                    tool_response = results
-                
-            messages.append(T.create_function_response(
-                id=fid,result=tool_response,name=fname
-            ))
+            return fast_scraping(url=args["url"])
         
-    if not run :
-        messages.append(T.create_assistant_response(respond))
+        elif fname == "brave_research":
+            print("\n","="*60)
+            print(f"{fname} : {args["web_request"]}")
+            print("="*60,"\n")
+
+            tool_response = ""
+            results = brave_research(web_request=args["web_request"], count=5, country="US")
+
+            try :
+                # Ensure results contains 'web' and 'results' keys
+                web_data = results.get("web", {})
+                
+                if "results" not in web_data:
+                    tool_response = "No results found in web search."
+                else:
+                    for item in web_data["results"]:
+                        tool_response += f"{item['title']} : {item['url']}\n"
+                
+                return tool_response
+            
+            except : # When brave_research return an error message in str
+                print(f"Search error : {results}")
+                return results
+            
+    def manage_messages_after_reply(self):
+
+        # Remove the content from all tool results after the agent have finished
+        i = 0
+        for msg in self.messages:
+            if msg["role"] == 'tool':
+                self.messages[i] = T.create_function_response(
+                    id=msg["tool_call_id"],result="",name=msg["name"]
+                )
+            
+            i+=1
+        
+        self.messages = self.messages[-200:] # Remember the last 200 messages (tools and user/assistant)
+
+My_agent = Brave_Agent()
+
+
+while True :
+    prompt = input("user : ")
+
+    if prompt == "/exit":
+        print("="*60)
+
+        
+        exit()
+
+    print("\n\nagent : ", end="")
+
+    for t in My_agent(prompt):
+        print(t, end="", flush=True)
+    
+    print("\n\n","="*60,"\n")

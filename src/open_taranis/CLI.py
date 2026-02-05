@@ -78,12 +78,12 @@ def run(stdscr):
         elif display_mode == "API":
             text = [
                 "APIs registered :",
-                ("- [x]" if os.environ.get('OPENROUTER_API') else "- [ ]") + " openrouter",
-                ("- [x]" if os.environ.get('HF_API') else "- [ ]") + " huggingface",
-                ("- [x]" if os.environ.get('VENICEAI_API') else "- [ ]") + " venice.ai",
-                ("- [x]" if os.environ.get('DEEPSEEK_API') else "- [ ]") + " deepseek.ai",
-                ("- [x]" if os.environ.get('XAI_API') else "- [ ]") + " x.ai",
-                ("- [x]" if os.environ.get('GROQ_API') else "- [ ]") + " groq",
+                ("- [x]" if os.environ.get('OPENROUTER_API_KEY') else "- [ ]") + " openrouter",
+                ("- [x]" if os.environ.get('HUGGINGFACE_API_KEY') else "- [ ]") + " huggingface",
+                ("- [x]" if os.environ.get('VENICE_API_KEY') else "- [ ]") + " venice.ai",
+                ("- [x]" if os.environ.get('DEEPSEEK_API_KEY') else "- [ ]") + " deepseek.ai",
+                ("- [x]" if os.environ.get('XAI_API_KEY') else "- [ ]") + " x.ai",
+                ("- [x]" if os.environ.get('GROQ_API_KEY') else "- [ ]") + " groq",
                 "",
                 "To show the env var : /show more"
             ]
@@ -91,12 +91,12 @@ def run(stdscr):
         elif display_mode == 'MORE_API':
             text = [
                 "APIs and env_var",
-                "- openrouter  = 'OPENROUTER_API'",
-                "- huggingface = 'HF_API'",
-                "- venice.ai   = 'VENICEAI_API'",
-                "- deepseek.ai = 'DEEPSEEK_API'",
-                "- x.ai        = 'XAI_API'",
-                "- groq        = 'GROQ_API'",
+                "- openrouter  = 'OPENROUTER_API_KEY'",
+                "- huggingface = 'HUGGINGFACE_API_KEY'",
+                "- venice.ai   = 'VENICE_API_KEY'",
+                "- deepseek.ai = 'DEEPSEEK_API_KEY'",
+                "- x.ai        = 'XAI_API_KEY'",
+                "- groq        = 'GROQ_API_KEY'",
             ]
         
         if display_mode != "NONE" :

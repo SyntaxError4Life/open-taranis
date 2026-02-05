@@ -62,21 +62,17 @@ def fast_scraping(url, timeout=10):
         response = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
         response.raise_for_status()
 
-        # Gestion encodage
         if not response.encoding or response.encoding == 'ISO-8859-1':
             response.encoding = response.apparent_encoding
         
-        # Utilisation de response.text
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Nettoyage DOM
         for tag in soup(['script', 'style', 'noscript', 'iframe', 'header', 'footer', 'nav', 'aside', 'form', 'svg']):
             tag.decompose()
             
         for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
             comment.extract()
 
-        # Extraction
         content_tag = soup.find('main') or soup.find('article') or soup.body
         if content_tag:
             text = content_tag.get_text(separator=' ', strip=True)

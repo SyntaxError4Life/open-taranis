@@ -7,7 +7,7 @@ import os
 import inspect
 from typing import Any, Callable, Literal, Union, get_args, get_origin
 
-__version__ = "0.2.0b"
+__version__ = "0.2.1"
 
 import requests
 from packaging import version
@@ -155,8 +155,8 @@ class clients:
         """
         Use `clients.veniceai_request` for call
         """
-        if os.environ.get('VENICEAI_API') :
-            api_key = os.environ.get('VENICEAI_API')
+        if os.environ.get('VENICE_API_KEY') :
+            api_key = os.environ.get('VENICE_API_KEY')
         return openai.OpenAI(api_key=api_key, base_url="https://api.venice.ai/api/v1")
     
     @staticmethod
@@ -164,8 +164,8 @@ class clients:
         """
         Use `clients.generic_request` for call
         """
-        if os.environ.get('DEEPSEEK_API') :
-            api_key = os.environ.get('DEEPSEEK_API')
+        if os.environ.get('DEEPSEEK_API_KEY') :
+            api_key = os.environ.get('DEEPSEEK_API_KEY')
         return openai.OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 
     @staticmethod
@@ -173,8 +173,8 @@ class clients:
         """
         Use `clients.generic_request` for call
         """
-        if os.environ.get('XAI_API') :
-            api_key = os.environ.get('XAI_API')
+        if os.environ.get('XAI_API_KEY') :
+            api_key = os.environ.get('XAI_API_KEY')
         return openai.OpenAI(api_key=api_key, base_url="https://api.x.ai/v1", timeout=3600)
 
     @staticmethod
@@ -182,8 +182,8 @@ class clients:
         """
         Use `clients.generic_request` for call
         """
-        if os.environ.get('GROQ_API') :
-            api_key = os.environ.get('GROQ_API')
+        if os.environ.get('GROQ_API_KEY') :
+            api_key = os.environ.get('GROQ_API_KEY')
         return openai.OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
     
     @staticmethod
@@ -191,8 +191,8 @@ class clients:
         """
         Use `clients.generic_request` for call
         """
-        if os.environ.get('HF_API') :
-            api_key = os.environ.get('HF_API')
+        if os.environ.get('HUGGINGFACE_API_KEY') :
+            api_key = os.environ.get('HUGGINGFACE_API_KEY')
         return openai.OpenAI(api_key=api_key, base_url="https://router.huggingface.co/v1")
     
     @staticmethod
@@ -200,8 +200,8 @@ class clients:
         """
         Use `clients.openrouter_request` for call
         """
-        if os.environ.get('OPENROUTER_API') :
-            api_key = os.environ.get('OPENROUTER_API')
+        if os.environ.get('OPENROUTER_API_KEY') :
+            api_key = os.environ.get('OPENROUTER_API_KEY')
         return openai.OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")   
 
     @staticmethod
