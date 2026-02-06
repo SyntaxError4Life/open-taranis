@@ -7,7 +7,7 @@ import os
 import inspect
 from typing import Any, Callable, Literal, Union, get_args, get_origin
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 import requests
 from packaging import version
@@ -132,9 +132,14 @@ class utils:
             }
         }
 
-# Utility for multiple functions, code by Kimi k2 thinking
-def functions_to_tools(funcs: list[Callable]) -> list[dict[str, Any]]:
-    return [utils.function_to_openai_tool(f) for f in funcs]
+    @staticmethod
+    def generate_clients(api_key_env:str, base_url:str, **kwargs):
+        def client_builder(api_key:str=None):
+            api_key = os.environ.get(api_key_env) if api_key_env else api_key
+                
+            return openai.OpenAI(api_key=api_key, base_url=base_url, default_headers=kwargs.get("default_headers"))
+
+        return client_builder
 
 
 class clients:
@@ -149,68 +154,25 @@ class clients:
         Use `clients.generic_request` for call
         """
         return openai.OpenAI(api_key=api_key, base_url=base_url)
-
-    @staticmethod
-    def veniceai(api_key: str=None) -> openai.OpenAI:
-        """
-        Use `clients.veniceai_request` for call
-        """
-        if os.environ.get('VENICE_API_KEY') :
-            api_key = os.environ.get('VENICE_API_KEY')
-        return openai.OpenAI(api_key=api_key, base_url="https://api.venice.ai/api/v1")
     
-    @staticmethod
-    def deepseek(api_key: str=None) -> openai.OpenAI:
-        """
-        Use `clients.generic_request` for call
-        """
-        if os.environ.get('DEEPSEEK_API_KEY') :
-            api_key = os.environ.get('DEEPSEEK_API_KEY')
-        return openai.OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
-
-    @staticmethod
-    def xai(api_key: str=None) -> openai.OpenAI:
-        """
-        Use `clients.generic_request` for call
-        """
-        if os.environ.get('XAI_API_KEY') :
-            api_key = os.environ.get('XAI_API_KEY')
-        return openai.OpenAI(api_key=api_key, base_url="https://api.x.ai/v1", timeout=3600)
-
-    @staticmethod
-    def groq(api_key: str=None) -> openai.OpenAI:
-        """
-        Use `clients.generic_request` for call
-        """
-        if os.environ.get('GROQ_API_KEY') :
-            api_key = os.environ.get('GROQ_API_KEY')
-        return openai.OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
+    veniceai = utils.generate_clients('VENICE_API_KEY', "https://api.venice.ai/api/v1")
     
-    @staticmethod
-    def huggingface(api_key: str=None) -> openai.OpenAI:
-        """
-        Use `clients.generic_request` for call
-        """
-        if os.environ.get('HUGGINGFACE_API_KEY') :
-            api_key = os.environ.get('HUGGINGFACE_API_KEY')
-        return openai.OpenAI(api_key=api_key, base_url="https://router.huggingface.co/v1")
+    deepseek = utils.generate_clients('DEEPSEEK_API_KEY',"https://api.deepseek.com")
+
+    xai = utils.generate_clients('XAI_API_KEY', "https://api.x.ai/v1")
+
+    groq = utils.generate_clients('GROQ_API_KEY', "https://api.groq.com/openai/v1")
+
+    huggingface = utils.generate_clients('HUGGINGFACE_API_KEY', "https://router.huggingface.co/v1")
     
-    @staticmethod
-    def openrouter(api_key: str=None) -> openai.OpenAI:
-        """
-        Use `clients.openrouter_request` for call
-        """
-        if os.environ.get('OPENROUTER_API_KEY') :
-            api_key = os.environ.get('OPENROUTER_API_KEY')
-        return openai.OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")   
+    ollama = utils.generate_clients(None, "http://localhost:11434/v1")
 
-    @staticmethod
-    def ollama() -> openai.OpenAI:
-        """
-        Use `clients.generic_request` for call
-        """
-        return openai.OpenAI(api_key="", base_url="http://localhost:11434/v1")   
+    openrouter = utils.generate_clients('OPENROUTER_API_KEY', "https://openrouter.ai/api/v1")
 
+    kimi_code = utils.generate_clients("KIMI_CODE_API_KEY", "https://api.kimi.com/coding/v1",
+        default_headers={"User-Agent": "RooCode/3.30.3","HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline","X-Title": "Roo Code"}
+    )
+    
 # ==============================
 # Customers for calls with their specifications"
 #
@@ -322,18 +284,35 @@ def handle_streaming(stream: openai.Stream):
     accumulated_tool_calls = {}
     arg_chunks = {}  # Per tool_call index: list of argument chunks
 
+    is_thinking = False
+
     # Process each chunk
     for chunk in stream:
         # Skip if no choices
         if not chunk.choices:
             continue
+
         delta = chunk.choices[0].delta
         if delta is None:
             continue
+        
+        # Handle reasoning streaming
+        if getattr(delta, 'reasoning_content', None):
+            if is_thinking :
+                yield delta.reasoning_content, [], False
+            else :
+                yield "<think>\n", [], False
+                yield delta.reasoning_content, [], False
+                is_thinking = True
 
         # Handle content streaming
         if delta.content :
-            yield delta.content, [], False
+            if is_thinking :
+                yield "</think>\n", [], False
+                yield delta.content, [], False
+                is_thinking = False
+            else :
+                yield delta.content, [], False
 
         # Handle tool calls in delta
         if delta.tool_calls:
@@ -412,12 +391,17 @@ def handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str] :
 
     return fid, fname, args, ""
 
+# Utility for multiple functions, code by Kimi k2 thinking
+@staticmethod
+def functions_to_tools(funcs: list[Callable]) -> list[dict[str, Any]]:
+    return [utils.function_to_openai_tool(f) for f in funcs]
+
 # ==============================
 # Functions to simplify the messages roles
 # ==============================
 
 @staticmethod
-def create_assistant_response(content:str, tool_calls:list[dict]=None) -> dict[str, str]:
+def create_assistant_response(content:str, tool_calls:list[dict]=None, reasoning_content:str=None) -> dict[str, str]:
     """
     Creates an assistant message, optionally with tool calls.
     
@@ -428,8 +412,12 @@ def create_assistant_response(content:str, tool_calls:list[dict]=None) -> dict[s
     Returns:
         dict: Message formatted for the API
     """
-    if tool_calls : return {"role": "assistant","content": content,"tool_calls": tool_calls}
-    return {"role": "assistant","content": content}
+    r = {"role": "assistant","content": content}
+    if tool_calls : 
+        r.update({"tool_calls":tool_calls})
+    if reasoning_content :
+        r.update({"reasoning_content":reasoning_content})
+    return r
 
 @staticmethod
 def create_function_response(id:str, result:str, name:str) -> dict[str, str, str]:
@@ -450,14 +438,16 @@ def create_user_prompt(content:str) -> dict[str, str] :
 # ==============================
 
 class agent_base:
-    def __init__(self):
+    def __init__(self, is_thinking_enabled:bool=False, yield_thinking:bool=False):
 
         self._system_prompt = [create_system_prompt("")]
         self.messages = []
         self.tools = []
 
         self.meta = {
-            "create_stream":True
+            "create_stream":True,
+            "is_thinking_enabled":is_thinking_enabled,
+            "yield_thinking":yield_thinking,
         }
     
     def create_stream(self):
@@ -524,6 +514,12 @@ class agent_base:
 
     def execute_tools(self, fname, args):
         raise NotImplementedError("Subclasses must implement execute_tools()")
+    
+    def manage_token_yield(self, token, is_thinking=None):
+        """
+        # TO IMPLEMENT if needed for custom front !
+        """
+        return token
 
     def __call__(self, prompt):
 
@@ -534,19 +530,41 @@ class agent_base:
         ))
         
         while run :
-
+            is_thinking=False # Reset at each request
             response = ""
+            reasoning = ""
             for token, tool_calls, run in handle_streaming(self.create_stream()) :
                 if token :
-                    yield token
-                    response += token
-            
-            self.messages.append(create_assistant_response(
-                self.manage_assistant_response(response)
-            ))
+
+                    if "<think>" in token or is_thinking :
+                        is_thinking=True
+
+                        if "</think>" in token :
+                            is_thinking=False
+
+                        if self.meta["is_thinking_enabled"] :
+                            reasoning += token
+                        else :
+                            response += token
+                        
+                        if self.meta["yield_thinking"]:
+                            yield self.manage_token_yield(token, is_thinking)
+                    
+                    else :
+                        yield self.manage_token_yield(token, is_thinking)
+                        response += token
 
             if run:
-                self.messages.append(create_assistant_response(response, tool_calls))
+
+                if self.meta["is_thinking_enabled"] :
+                    self.messages.append(create_assistant_response(
+                        self.manage_assistant_response(response), tool_calls,
+                        reasoning_content=reasoning)
+                    )
+                else :
+                    self.messages.append(create_assistant_response(
+                        self.manage_assistant_response(response), tool_calls)
+                    )
 
                 for tool_call in tool_calls :
                     fid, fname, args, _ = handle_tool_call(tool_call)
@@ -558,6 +576,17 @@ class agent_base:
                     ))
             
             self.manage_messages_in_reply()
+
+        reasoning = re.sub(r'<think>\n?|</think>\n', '', reasoning).strip()
             
-        self.messages.append(create_assistant_response(response))
+        if self.meta["is_thinking_enabled"] :
+            self.messages.append(create_assistant_response(
+                self.manage_assistant_response(response), tool_calls,
+                reasoning_content=reasoning)
+            )
+        else :
+            self.messages.append(create_assistant_response(
+                self.manage_assistant_response(response), tool_calls)
+            )
+
         self.manage_messages_after_reply()

@@ -85,6 +85,9 @@ def run(stdscr):
                 ("- [x]" if os.environ.get('XAI_API_KEY') else "- [ ]") + " x.ai",
                 ("- [x]" if os.environ.get('GROQ_API_KEY') else "- [ ]") + " groq",
                 "",
+                "=== Codes ===",
+                ("- [x]" if os.environ.get('KIMI_CODE_API_KEY') else "- [ ]") + " Kimi Code",
+                "",
                 "To show the env var : /show more"
             ]
         
@@ -97,6 +100,9 @@ def run(stdscr):
                 "- deepseek.ai = 'DEEPSEEK_API_KEY'",
                 "- x.ai        = 'XAI_API_KEY'",
                 "- groq        = 'GROQ_API_KEY'",
+                "",
+                "=== Codes ===",
+                "- Kimi Code   = 'KIMI_CODE_API_KEY'"
             ]
         
         if display_mode != "NONE" :

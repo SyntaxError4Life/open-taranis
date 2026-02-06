@@ -123,11 +123,11 @@ while True :
 
 ## Roadmap
 
-- [X]   v0.0.1: start
-- [X]   v0.0.x: Add and confirm other API providers (in the cloud, not locally)
-- [X]   v0.1.x: Functionality verifications in [examples](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/)
-- [X] > v0.2.0: Add features for **logic-only coding** approach, start with `agent_base`
-- [ ]   v0.3.x: Add a full agent in **TUI** and upgrade web client **deployments**
+- [X] v0.0.1: start
+- [X] v0.0.x: Add and confirm other API providers (in the cloud, not locally)
+- [X] v0.1.x: Functionality verifications in [examples](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/)
+- [X] v0.2.x: Add features for **logic-only coding** approach, start with `agent_base`
+- [ ] v0.3.x: Add a full agent in **TUI** and upgrade web client **deployments**
 - The rest will follow soon.
 
 ## Changelog
@@ -152,6 +152,7 @@ while True :
 
 - **v0.2.0** : Adding `agent_base`
 - **v0.2.1** : Updated `agent_base` and added a more concrete example of agents
+- **v0.2.2** : Upgraded all the code to add [**Kimi Code**]() as client and reduce code (**Not official !**)
 </details>   
 
 
