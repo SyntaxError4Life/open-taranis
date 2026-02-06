@@ -152,7 +152,7 @@ while True :
 
 - **v0.2.0** : Adding `agent_base`
 - **v0.2.1** : Updated `agent_base` and added a more concrete example of agents
-- **v0.2.2** : Upgraded all the code to add [**Kimi Code**]() as client and reduce code (**Not official !**)
+- **v0.2.2** : Upgraded all the code to add [**Kimi Code**]() (**Not official !**) as client and reduce code.
 </details>   
 
 
