@@ -121,6 +121,8 @@ while True :
 
 - [Base of the docs](https://zanomega.com/open-taranis/) (coding some things before the real docs)
 
+Available in [French](https://zanomega.com/open-taranis/fr/)
+
 ## Roadmap
 
 - [X] v0.0.1: start
