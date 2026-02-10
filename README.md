@@ -119,7 +119,7 @@ while True :
 
 ## Documentation :
 
-- [Base of the docs](https://zanomega.com/open-taranis/) (coding some things before the real docs)
+- [Base of the docs](https://zanomega.com/open-taranis/)
 
 Available in [French](https://zanomega.com/open-taranis/fr/)
 
@@ -154,7 +154,8 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 
 - **v0.2.0** : Adding `agent_base`
 - **v0.2.1** : Updated `agent_base` and added a more concrete example of agents
-- **v0.2.2** : Upgraded all the code to add [**Kimi Code**]() (**Not official !**) as client and reduce code.
+- **v0.2.2** : Upgraded all the code to add [**Kimi Code**](https://www.kimi.com/code) as client and reduce code (**Not official !**)
+- **v0.2.3** : Updated `agent_base`, add some functions and add a **cool** agent
 </details>   
 
 
@@ -164,6 +165,7 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 - [tools call in a HR JSON database in multi-rounds](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/test_HR_json_database.py)
 - [simple search agent with Brave API](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/brave_research.py)
 - [full auto search agent with Brave API](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/brave_research_loop.py)
+- [agent with compressible memory (recommended with Kimi)](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/infinite_agent_v1.py)
 
 ## Links
 

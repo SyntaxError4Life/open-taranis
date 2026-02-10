@@ -7,7 +7,7 @@ import os
 import inspect
 from typing import Any, Callable, Literal, Union, get_args, get_origin
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 import requests
 from packaging import version
@@ -140,7 +140,6 @@ class utils:
             return openai.OpenAI(api_key=api_key, base_url=base_url, default_headers=kwargs.get("default_headers"))
 
         return client_builder
-
 
 class clients:
 
@@ -396,6 +395,19 @@ def handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str] :
 def functions_to_tools(funcs: list[Callable]) -> list[dict[str, Any]]:
     return [utils.function_to_openai_tool(f) for f in funcs]
 
+def handle_thinking(token, is_thinking):
+    if "<think>" in token or is_thinking :
+        is_thinking=True
+
+        if "</think>" in token :
+            is_thinking=False
+    
+    return is_thinking
+
+def remove_thinks(message:str):
+    assert type(message) == str
+    return re.sub(r'<think>\n?|</think>\n', '', message).strip()
+
 # ==============================
 # Functions to simplify the messages roles
 # ==============================
@@ -524,6 +536,7 @@ class agent_base:
     def __call__(self, prompt):
 
         run = True
+        if prompt == "":prompt = "None"
 
         self.messages.append(create_user_prompt(
             self.manage_user_prompt(prompt)
@@ -577,7 +590,7 @@ class agent_base:
             
             self.manage_messages_in_reply()
 
-        reasoning = re.sub(r'<think>\n?|</think>\n', '', reasoning).strip()
+        reasoning = remove_thinks(reasoning)
             
         if self.meta["is_thinking_enabled"] :
             self.messages.append(create_assistant_response(
