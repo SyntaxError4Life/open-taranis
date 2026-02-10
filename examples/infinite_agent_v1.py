@@ -1,4 +1,4 @@
-MODEL = "openai/gpt-oss-120b:free"
+MODEL = "arcee-ai/trinity-large-preview:free"
 
 import open_taranis as T
 
