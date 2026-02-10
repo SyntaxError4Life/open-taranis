@@ -3,7 +3,7 @@ MODEL = "openai/gpt-oss-120b:free"
 import open_taranis as T
 
 CLIENT = T.clients.openrouter()
-REQUEST = T.clients.generic_request
+REQUEST = T.clients.openrouter_request
 MAX_TOKENS = 16000
 
 # Made with v0.2.3
