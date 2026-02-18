@@ -6,7 +6,9 @@ CLIENT = T.clients.openrouter()
 REQUEST = T.clients.openrouter_request
 MAX_TOKENS = 16000
 
-# Made with v0.2.3
+# Made with v0.2.4
+if T.__version__ < "0.2.4":
+    exit(f"Version v0.2.4 minimum required, you have v{T.__version__}")
 
 # =========================================
 
@@ -61,13 +63,11 @@ And the current conversation:
             is_thinking = False
             new_memory = ""
             for token, _, _ in T.handle_streaming(stream):
-                is_thinking = T.handle_thinking(token, is_thinking)
+                is_thinking, norm_tok, cot_tok = T.handle_thinking(token, is_thinking)
 
-                if is_thinking :
-                    continue
-                else : 
-                    new_memory += token
-            
+                if norm_tok :
+                    new_memory += norm_tok
+                       
             self.memory = T.remove_thinks(new_memory)
             self._system_prompt = [T.create_system_prompt(
                 self.system_prompt + self.memory

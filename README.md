@@ -44,27 +44,6 @@ for token, tool, tool_bool in T.handle_streaming(stream) :
 ```
 </details> 
 
-<details><summary><b>To create a simple display using gradio as backend</b></summary>
-
-```python
-import open_taranis as T
-import open_taranis.web_front as W
-import gradio as gr
-
-gr.ChatInterface(
-    fn=W.chat_fn_gradio(
-    client=T.clients.openrouter(), # API_KEY in env_var
-    request=T.clients.openrouter_request,
-    model="nvidia/nemotron-3-nano-30b-a3b:free",
-    _system_prompt="You are an agent named **Taranis**"
-).create_fn(),
-    title="web front"
-).launch()
-``` 
-</details>  
-
-
-
 <details><summary><b>Make a simple agent with a context windows on the 6 last turns</b></summary>
 
 ```python
@@ -102,6 +81,33 @@ while True :
     
     print("\n\n","="*60,"\n")
 ```
+</details>
+
+<details><summary><b>To create a simple display using gradio as backend</b></summary>
+
+```python
+import open_taranis as T
+import open_taranis.web_front as W
+import gradio as gr
+
+class Gradio_agent(T.agent_base):
+    def __init__(self):
+        super().__init__()
+
+        self._system_prompt = [T.create_system_prompt("You are a agent nammed **Taranis**")]
+    
+    def create_stream(self):
+        return T.clients.openrouter_request(
+            client=T.clients.openrouter(),
+            messages=self._system_prompt+self.messages,
+            model="nvidia/nemotron-3-nano-30b-a3b:free"
+        )
+
+gr.ChatInterface(
+    fn=W.create_fn_gradio(Gradio_agent()),
+    title="Open-taranis Agent"
+).launch()
+``` 
 </details>  
 
 ---
@@ -156,6 +162,7 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 - **v0.2.1** : Updated `agent_base` and added a more concrete example of agents
 - **v0.2.2** : Upgraded all the code to add [**Kimi Code**](https://www.kimi.com/code) as client and reduce code (**Not official !**)
 - **v0.2.3** : Updated `agent_base`, add some functions and add a **cool** agent
+- **v0.2.4** : Improved CoT techniques and updated `web_front.py`, deploy an agent to the browser in a few lines
 </details>   
 
 

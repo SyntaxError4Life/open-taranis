@@ -7,7 +7,7 @@ import os
 import inspect
 from typing import Any, Callable, Literal, Union, get_args, get_origin
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 import requests
 from packaging import version
@@ -395,14 +395,17 @@ def handle_tool_call(tool_call:dict) -> tuple[str, str, dict, str] :
 def functions_to_tools(funcs: list[Callable]) -> list[dict[str, Any]]:
     return [utils.function_to_openai_tool(f) for f in funcs]
 
-def handle_thinking(token, is_thinking):
-    if "<think>" in token or is_thinking :
-        is_thinking=True
+def handle_thinking(TOKEN, is_thinking):
+    token, CoT = TOKEN, None
 
-        if "</think>" in token :
-            is_thinking=False
+    if "<think>" in TOKEN or is_thinking :
+        token, CoT = None, TOKEN
+        is_thinking = True
+
+        if "</think>" in TOKEN :
+            is_thinking = False
     
-    return is_thinking
+    return is_thinking, token, CoT 
 
 def remove_thinks(message:str):
     assert type(message) == str
@@ -500,9 +503,6 @@ class agent_base:
     def manage_messages_in_reply(self):
         """
         Function to manage message history, executed at each step (after agent response or tool call)
-
-
-        ```
         """
         pass
 
@@ -547,25 +547,21 @@ class agent_base:
             response = ""
             reasoning = ""
             for token, tool_calls, run in handle_streaming(self.create_stream()) :
-                if token :
+                is_thinking, token, CoT = handle_thinking(token, is_thinking)
 
-                    if "<think>" in token or is_thinking :
-                        is_thinking=True
-
-                        if "</think>" in token :
-                            is_thinking=False
-
-                        if self.meta["is_thinking_enabled"] :
-                            reasoning += token
-                        else :
-                            response += token
-                        
-                        if self.meta["yield_thinking"]:
-                            yield self.manage_token_yield(token, is_thinking)
-                    
+                if is_thinking:
+                    if self.meta["is_thinking_enabled"]:
+                        reasoning += CoT
                     else :
-                        yield self.manage_token_yield(token, is_thinking)
-                        response += token
+                        response += CoT
+
+                    if self.meta["yield_thinking"]:
+                        yield self.manage_token_yield(token, is_thinking=True)
+
+                else :
+                    yield self.manage_token_yield(token, is_thinking=False)
+                    if token : response += token          
+
 
             if run:
 
