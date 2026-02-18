@@ -96,6 +96,9 @@ class Gradio_agent(T.agent_base):
 
         self._system_prompt = [T.create_system_prompt("You are a agent nammed **Taranis**")]
     
+    def manage_token_yield(self, token, is_thinking):
+        return token, is_thinking
+    
     def create_stream(self):
         return T.clients.openrouter_request(
             client=T.clients.openrouter(),
