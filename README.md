@@ -138,7 +138,8 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 - [X] v0.0.x: Add and confirm other API providers (in the cloud, not locally)
 - [X] v0.1.x: Functionality verifications in [examples](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/)
 - [X] v0.2.x: Add features for **logic-only coding** approach, start with `agent_base`
-- [ ] v0.3.x: Add a full agent in **TUI** and upgrade web client **deployments**
+- [X] v0.3.x: Add a full agent in **TUI** and upgrade web client **deployments**
+- [ ] v0.4.x: Improving support for **local AI deployment**
 - The rest will follow soon.
 
 ## Changelog
@@ -168,11 +169,15 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 - **v0.2.4** : Improved CoT techniques and updated `web_front.py`, deploy an agent to the browser in a few lines
 </details>   
 
+<details><summary><b>v0.3.x : The restart</b></summary>
+
+- **v0.3.0** : **Rewrite all** the code from scratch (without AI) to **improve everything**
+- **v0.3.1 (future)** : Add a **built-in agent** in the **TUI** + full doc in french and english
+</details>   
+
 
 ## Advanced Examples
 
-- [tools call in a JSON database](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/test_json_database.py)
-- [tools call in a HR JSON database in multi-rounds](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/test_HR_json_database.py)
 - [simple search agent with Brave API](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/brave_research.py)
 - [full auto search agent with Brave API](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/brave_research_loop.py)
 - [agent with compressible memory (recommended with Kimi)](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/infinite_agent_v1.py)

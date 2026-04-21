@@ -1,11 +1,15 @@
 import open_taranis as T
 from open_taranis.tools import brave_research, fast_scraping
 
-client = T.clients.openrouter(api_key=None)
-request = T.clients.openrouter_request
+MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
+
+client = T.Clients.openrouter
+request = T.Request(
+    tools=T.functions_to_tools([brave_research,fast_scraping])
+)
 
 messages = [
-    T.create_system_prompt("""You are an expert, autonomous web research assistant. Your role is to use your web search tools to answer the user's questions with precision and thoroughness.
+    T.create.system_prompt("""You are an expert, autonomous web research assistant. Your role is to use your web search tools to answer the user's questions with precision and thoroughness.
 
 ## General Behavior Rules
 - Be objective, concise, and factual in your responses.
@@ -45,24 +49,29 @@ messages = [
 
 Your ultimate goal is to provide a **complete, exact, and sourced** answer using all available web navigation capabilities.
 """),
-    T.create_user_prompt(input("Request : "))
+    T.create.user_prompt(input("Request : "))
 ]
 
 run = True
 
 while run :
     respond=""
-    
-    for token, tool_calls, run in T.handle_streaming(request(
-        client=client,messages=messages,model="stepfun/step-3.5-flash:free",
-        tools=T.functions_to_tools([brave_research,fast_scraping])
-    )):
-        if token :
-            print(token, end="")
-            respond+=token
+    reasoning=""
 
+    for token, is_thinking, tool_calls, run, meta in T.handle_streaming(
+        request=request,
+        client=client,
+        model=MODEL,
+        messages=messages
+    ):
+        if is_thinking:
+            reasoning+=token
+        else :
+            print(token, end="", flush=True)
+            respond+=token
+        
     if run :
-        messages.append(T.create_assistant_response(respond, tool_calls))
+        messages.append(T.create.assistant_response(respond, tool_calls))
 
         for tool_call in tool_calls :
             fid, fname, args, _ = T.handle_tool_call(tool_call)
@@ -98,9 +107,13 @@ while run :
                     print(f"Search error : {results}")
                     tool_response = results
                 
-            messages.append(T.create_function_response(
+            messages.append(T.create.function_response(
                 id=fid,result=tool_response,name=fname
             ))
         
     if not run :
-        messages.append(T.create_assistant_response(respond))
+        messages.append(T.create.assistant_response(respond))
+
+print("\n\n")
+print("="*60)
+print(meta)

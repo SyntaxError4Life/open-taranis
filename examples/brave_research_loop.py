@@ -1,7 +1,6 @@
-MODEL = "stepfun/step-3.5-flash:free"
-# Recommend GLM 4.7 but not free...
+MODEL = "nvidia/nemotron-3-super-120b-a12b:free"
 
-# Coded in v0.2.1
+# Coded in v0.2.1 but adapted in v0.3.0 !
 
 # ==============================================================
 
@@ -12,8 +11,12 @@ class Brave_Agent(T.agent_base):
     def __init__(self):
         super().__init__()
 
-        self.client = T.clients.openrouter()
-        self._system_prompt = [T.create_system_prompt("""You are an expert, autonomous web research assistant. Your role is to use your web search tools to answer the user's questions with precision and thoroughness.
+        self.client = T.Clients.openrouter
+        self.request_profil = T.Request(
+            tools=T.functions_to_tools([fast_scraping, brave_research])
+        )
+
+        self._system_prompt = [T.create.system_prompt("""You are an expert, autonomous web research assistant. Your role is to use your web search tools to answer the user's questions with precision and thoroughness.
 
 ## General Behavior Rules
 - Be objective, concise, and factual in your responses.
@@ -60,12 +63,12 @@ Your ultimate goal is to provide a **complete, exact, and sourced** answer using
         ])
 
 
-    def create_stream(self):
-        return T.clients.openrouter_request(
-            client=self.client,
-            messages=self._system_prompt+self.messages,
+    def create_stream(self, history):
+        return T.handle_streaming(
+            self.request_profil,
+            self.client,
             model=MODEL,
-            tools=self.tools,
+            messages=self._system_prompt + history
         )
     
     def execute_tools(self, fname, args):
@@ -101,35 +104,38 @@ Your ultimate goal is to provide a **complete, exact, and sourced** answer using
                 print(f"Search error : {results}")
                 return results
             
-    def manage_messages_after_reply(self):
+    def manage_messages_after_reply(self, history):
 
         # Remove the content from all tool results after the agent have finished
         i = 0
-        for msg in self.messages:
-            if msg["role"] == 'tool':
-                self.messages[i] = T.create_function_response(
-                    id=msg["tool_call_id"],result="",name=msg["name"]
-                )
-            
-            i+=1
+        history = T.remove_from.auto(
+            history,
+            tool_response=True
+        )
         
-        self.messages = self.messages[-200:] # Remember the last 200 messages (tools and user/assistant)
+        history = history[-200:] # Remember the last 200 messages (tools and user/assistant)
+
+        return history
+
+    def manage_token_yield(self, token, is_thinking = None, meta = None, tool_calls = None):
+        return token, meta
 
 My_agent = Brave_Agent()
 
+Cost = {'prompt_tokens': 0, 'completion_tokens': 0, 'cached_tokens': 0} 
 
 while True :
     prompt = input("user : ")
 
     if prompt == "/exit":
         print("="*60)
-
-        
+        print(f"Total cost : {Cost}")
         exit()
 
     print("\n\nagent : ", end="")
 
-    for t in My_agent(prompt):
+    for t, meta in My_agent(T.create.user_prompt(prompt)):
         print(t, end="", flush=True)
     
+    Cost = T.add_meta(Cost, meta)
     print("\n\n","="*60,"\n")
