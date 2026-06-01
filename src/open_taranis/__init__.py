@@ -16,7 +16,7 @@ from typing import Any, Callable, Literal, Union, get_args, get_origin
 from base64 import b64encode
 from mimetypes import guess_type as guess_image_type
 
-__version__ = "0.3.1"
+__version__ = "0.3.1" 
 
 from packaging import version
 

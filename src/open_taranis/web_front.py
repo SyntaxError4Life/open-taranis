@@ -1,7 +1,7 @@
 import open_taranis as T
 
 def create_fn_gradio(Agent:T.agent_base):
-    
+     
     last_error = None
     for args in [("test", True), ("test", True, None), ("test", True, None, None)]:
         result = Agent.manage_token_yield(*args)

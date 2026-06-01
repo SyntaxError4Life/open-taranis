@@ -1,0 +1,70 @@
+<h1>Les clients</h1>
+<pre><code class="language-python">import open_taranis as T
+
+client = T.Clients.openrouter # Nous sommes ici
+
+request = T.Request(
+    tools=None, tool_choice=&quot;auto&quot;,
+    temperature=0.4
+)
+
+print(&quot;assistant : &quot;,end=&quot;&quot;)
+for token, is_thinking, tools, tool_bool, meta in T.handle_streaming(
+    request=request,
+    client=client,
+    model=&quot;nvidia/nemotron-3-nano-30b-a3b:free&quot;,
+    messages=[T.create.user_prompt(&quot;Tell me about yourself&quot;)],
+    API_KEY=None
+) : 
+    print(token, end=&quot;&quot;, flush=True)
+
+print(f&quot;\n\n{meta}&quot;)
+</code></pre>
+<br>
+<br>
+<hr/>
+<br>
+<p>Dans <strong><code>open-taranis</code></strong> on a implémenté les clients séparément pour deux raisons :</p>
+<ol>
+<li>Rendre les endpoint plus <strong>faciles à utiliser</strong> sans avoir à les écrire.</li>
+<li>Permettre dans le futur d'ajouter des <strong>méta-paramètres</strong> comme pour un <strong>client spécifique</strong></li>
+</ol>
+<p>Voilà la liste ce qu'on a déjà configuré :</p>
+<ul>
+<li><code>openrouter</code> pour <a href="https://openrouter.ai/">openrouter.ai</a> soit des milliers de modèles</li>
+<li><code>huggingface</code> pour <a href="https://huggingface.co/">huggingface.co</a></li>
+<li><code>venice.ai</code> pour <a href="https://venice.ai/home">venice.ai</a>, très pratique pour un endpoint anonyme</li>
+<li><code>deepseek.ai</code> pour <a href="https://platform.deepseek.com/">deepseek.com</a>, le leader chinois.</li>
+<li><code>x.ai</code> pour <a href="https://console.x.ai/">x.ai</a></li>
+<li><code>mistral.ai</code> pour <a href="https://console.mistral.ai/home">mistral.ai</a></li>
+<li><code>groq</code> pour <a href="https://console.groq.com/home">groq.come</a>, le plus rapide en <strong>streaming+outils</strong></li>
+<li><code>Kimi Code</code> pour <a href="https://www.kimi.com/code">kimi.com</a>, pas officiel mais le spoofing fonctionne pour le moment</li>
+</ul>
+<p>Après en annexe vous avez <code>ollama</code> qui pointe en local et sans clé API, que du <strong>localhost</strong> est conseillé !!</p>
+<br>
+<hr/>
+<br>
+<p>Dans le code ça ressemble à cela :</p>
+<pre><code class="language-python">T.Clients.openrouter
+T.Clients.huggingface
+T.Clients.veniceai
+T.Clients.deepseek
+T.Clients.xai
+T.Clients.groq
+T.Clients.kimi_code
+
+T.Clients.ollama
+</code></pre>
+<br>
+<p>D'ailleurs <strong>pour coder votre propre client</strong>, ici pour un serveur <strong>llama.cpp</strong> par <strong>exemple</strong>, vous pouvez faire :</p>
+<pre><code class="language-python">custom_client = T.Client(
+    API_KEY_name=&quot;llama_server_API_KEY&quot;,
+    BASE_URL=&quot;https://api.https://example.com/&quot;
+)
+</code></pre>
+<br>
+<p>Après vous pourrez l'<strong>utiliser librement</strong></p>
+<br>
+<hr/>
+<br>
+<p>Dans la prochaine page on verra les requêtes, comment les faire !!</p>

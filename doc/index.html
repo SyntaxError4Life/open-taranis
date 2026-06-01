@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>open-taranis doc</title>
+  <meta name="description" content="open-taranis doc">
+</head>
+<body>
+  <script>
+    // Liste des langues supportées
+    const supportedLangs = ['fr', 'en'];
+
+    // Récupération de la langue du navigateur
+    const browserLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase().substring(0, 2);
+
+    // Si la langue est supportée → redirection immédiate
+    if (supportedLangs.includes(browserLang)) {
+      // Chemins relatifs depuis /doc/
+      window.location.replace(`${browserLang}/`);
+    } else {
+      // Fallback : anglais par défaut
+      window.location.replace(`en`);
+    }
+  </script>
+</body>
+</html>

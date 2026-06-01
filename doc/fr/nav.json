@@ -1,0 +1,27 @@
+{
+  "groups": [
+    {
+      "name": "welcome",
+      "pages": [
+        {"id": "welcome", "title": "Welcome"}
+      ]
+    },
+    {
+      "name": "Concepts",
+      "pages": [
+        {"id": "start", "title": "Start"},
+        {"id": "clients", "title": "Les clients"},
+        {"id": "requests", "title": "Les requêtes"},
+        {"id": "stream", "title": "Le streaming"},
+        {"id": "prompts", "title": "Les prompt"},
+        {"id": "tools", "title": "Les outils"}
+      ]
+    },
+    {
+      "name": "Soon",
+      "pages": [
+        {"id": "Soon", "title": "Soon"}
+      ]
+    }
+  ]
+}

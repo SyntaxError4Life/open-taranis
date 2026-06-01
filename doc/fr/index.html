@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>open-taranis</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 220px;
+            height: 100vh;
+            background: #111;
+            border-right: 1px solid rgba(220, 50, 50, 0.2);
+            overflow-y: auto;
+            z-index: 100;
+            padding: 1.5rem 0;
+        }
+
+        .sidebar h1 {
+            color: rgba(220, 50, 50, 0.9);
+            font-size: 1.1rem;
+            padding: 0 1rem 1.5rem;
+            border-bottom: 1px solid #333;
+            margin-bottom: 1rem;
+        }
+
+        .nav-group { margin-bottom: 0.5rem; }
+
+        .nav-toggle {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            background: none;
+            border: none;
+            color: #888;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-toggle:hover { color: #e0e0e0; }
+        .nav-toggle::after { content: '▼'; font-size: 0.7rem; transition: transform 0.3s; }
+        .nav-group.active .nav-toggle::after { transform: rotate(180deg); }
+
+        .nav-list {
+            display: none;
+            list-style: none;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .nav-group.active .nav-list { display: block; }
+
+        .nav-list li a {
+            display: block;
+            padding: 0.5rem 1.5rem;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-left: 2px solid transparent;
+        }
+
+        .nav-list li a:hover, .nav-list li a.active {
+            color: rgba(220, 80, 80, 0.9);
+            background: rgba(220, 50, 50, 0.05);
+            border-left-color: rgba(220, 50, 50, 0.6);
+        }
+
+        main {
+            margin-left: 220px;
+            min-height: 100vh;
+            padding: 3rem 4rem;
+            max-width: 900px;
+        }
+
+        main h1 {
+            color: rgba(220, 50, 50, 0.9);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(220, 50, 50, 0.2);
+        }
+
+        main h2 {
+            color: #e0e0e0;
+            font-size: 1.3rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        main code {
+            background: rgba(220, 50, 50, 0.1);
+            color: rgba(255, 100, 100, 0.9);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: Consolas, monospace;
+        }
+
+        main pre {
+            background: #111;
+            border-left: 3px solid rgba(220, 50, 50, 0.6);
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        main pre code {
+            background: none;
+            color: #e0e0e0;
+            padding: 0;
+        }
+
+        .page-nav {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(220, 50, 50, 0.2);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .page-nav a {
+            color: rgba(220, 80, 80, 0.9);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(220, 50, 50, 0.3);
+            border-radius: 4px;
+        }
+
+        .page-nav a:hover { background: rgba(220, 50, 50, 0.1); }
+        .page-nav .prev::before { content: '← '; }
+        .page-nav .next::after { content: ' →'; }
+        .page-nav a.hidden { visibility: hidden; }
+
+        .menu-btn {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 200;
+            background: rgba(220, 50, 50, 0.8);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-btn { display: block; }
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+                width: 260px;
+                padding-top: 4rem;
+            }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar h1 { padding-top: 0; }
+            main {
+                margin-left: 0;
+                padding: 5rem 2rem 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-btn" onclick="toggleMenu()">Menu</button>
+
+    <nav class="sidebar" id="sidebar">
+        <h1>open-taranis</h1>
+        <div id="nav-container"></div>
+    </nav>
+
+    <main id="content"></main>
+
+    <script>
+        let navData = [];
+        let flatPages = [];
+
+        async function loadNav() {
+            const res = await fetch('nav.json');
+            navData = await res.json();
+            flatPages = navData.groups.flatMap(g => g.pages);
+            renderNav();
+            loadContent();
+        }
+
+        function renderNav() {
+            const container = document.getElementById('nav-container');
+            const currentHash = location.hash.slice(1) || 'accueil';
+
+            container.innerHTML = navData.groups.map((group) => {
+                const hasActive = group.pages.some(p => p.id === currentHash);
+                return `
+                    <div class="nav-group ${hasActive ? 'active' : ''}">
+                        <button class="nav-toggle" onclick="toggleGroup(this)">${group.name}</button>
+                        <ul class="nav-list">
+                            ${group.pages.map(p => `
+                                <li><a href="#${p.id}" class="${p.id === currentHash ? 'active' : ''}" onclick="setTimeout(updateActive, 10)">${p.title}</a></li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleGroup(btn) {
+            const group = btn.parentElement;
+            const wasActive = group.classList.contains('active');
+            document.querySelectorAll('.nav-group').forEach(g => g.classList.remove('active'));
+            if (!wasActive) group.classList.add('active');
+        }
+
+        function updateActive() {
+            document.querySelectorAll('.nav-list a').forEach(a => {
+                a.classList.toggle('active', a.getAttribute('href') === location.hash);
+            });
+            const currentHash = location.hash.slice(1) || 'accueil';
+            document.querySelectorAll('.nav-group').forEach(g => {
+                const hasActive = g.querySelector(`a[href="#${currentHash}"]`);
+                g.classList.toggle('active', hasActive);
+            });
+        }
+
+        async function loadContent() {
+            const pageId = location.hash.slice(1) || 'accueil';
+            const idx = flatPages.findIndex(p => p.id === pageId);
+
+            try {
+                const res = await fetch(`content/${pageId}.html`);
+                const html = await res.text();
+
+                const prev = idx > 0 ? flatPages[idx - 1] : null;
+                const next = idx < flatPages.length - 1 ? flatPages[idx + 1] : null;
+
+                document.getElementById('content').innerHTML = html + `
+                    <div class="page-nav">
+                        <a href="#${prev ? prev.id : ''}" class="prev ${prev ? '' : 'hidden'}" onclick="if(!'${prev ? prev.id : ''}')return false">${prev ? prev.title : ''}</a>
+                        <a href="#${next ? next.id : ''}" class="next ${next ? '' : 'hidden'}" onclick="if(!'${next ? next.id : ''}')return false">${next ? next.title : ''}</a>
+                    </div>
+                `;
+
+                document.title = `open-taranis - ${flatPages[idx].title}`;
+                updateActive();
+            } catch (e) {
+                document.getElementById('content').innerHTML = '<h1>Page non trouvée</h1>';
+            }
+        }
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        window.addEventListener('hashchange', loadContent);
+        loadNav();
+
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const btn = document.querySelector('.menu-btn');
+            if (window.innerWidth <= 768 &&
+                sidebar.classList.contains('open') &&
+                !sidebar.contains(e.target) &&
+                !btn.contains(e.target)) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>

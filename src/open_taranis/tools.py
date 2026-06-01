@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup, Comment
 import os
 import re
 import time
-
+ 
 class vars :
     BRAVE_API = None
 
