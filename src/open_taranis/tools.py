@@ -6,14 +6,24 @@ import os
 import re
 import time
 
-def brave_research(web_request: str, count: int, country: str):
-    try:
-        api = os.environ['BRAVE_API']
-    except KeyError:
-        raise ValueError("Critical error: The BRAVE_API environment variable is missing.")
+class vars :
+    BRAVE_API = None
 
-    if count > 5:
-        count = 5
+def brave_research(web_request: str, count: int, country: str):
+    """
+    - country : "US', "FR"...
+    - count recommended : 5 (max 8)
+    """
+    if vars.BRAVE_API :
+        api = vars.BRAVE_API
+    else :
+        try:
+            api = os.environ['BRAVE_API']
+        except KeyError:
+            raise ValueError("Critical error: The BRAVE_API environment variable is missing.")
+
+    if count > 8:
+        count = 8
 
     params = {
         "q": web_request,
@@ -48,28 +58,26 @@ def brave_research(web_request: str, count: int, country: str):
         # For other HTTP errors, we re-raise them as they might be critical
         raise
 
-
-
 def fast_scraping(url, timeout=10):
     """Quick scraping function, retrieves only the text from the given URL"""
     result = ""
-    
+
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
-        
+
         response = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
         response.raise_for_status()
 
         if not response.encoding or response.encoding == 'ISO-8859-1':
             response.encoding = response.apparent_encoding
-        
+
         soup = BeautifulSoup(response.text, 'html.parser')
 
         for tag in soup(['script', 'style', 'noscript', 'iframe', 'header', 'footer', 'nav', 'aside', 'form', 'svg']):
             tag.decompose()
-            
+
         for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
             comment.extract()
 
@@ -89,8 +97,8 @@ def fast_scraping(url, timeout=10):
     except Exception as e:
         msg = str(e)[:50] + "..." if len(str(e)) > 50 else str(e)
         result = f"Scraping failed: {msg}"
-    
+
     if not isinstance(result, str):
         result = str(result)
-    
+
     return result.encode('utf-8', errors='ignore').decode('utf-8')

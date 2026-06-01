@@ -16,7 +16,7 @@ from typing import Any, Callable, Literal, Union, get_args, get_origin
 from base64 import b64encode
 from mimetypes import guess_type as guess_image_type
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 from packaging import version
 
@@ -119,13 +119,13 @@ class Request:
                 error_detail = e.response.json()
             except Exception:
                 error_detail = e.response.text
-            raise RuntimeError(f"Erreur HTTP {e.response.status_code}: {error_detail}")
+            raise RuntimeError(f"HTTP Error {e.response.status_code}: {error_detail}")
         except Timeout:
-            raise TimeoutError("La requête a expiré")
+            raise TimeoutError("The request has expired.")
         except ConnectionError:
-            raise ConnectionError(f"Impossible de se connecter à {client.BASE_URL}")
+            raise ConnectionError(f"Unable to connect to {client.BASE_URL}")
         except RequestException as e:
-            raise RuntimeError(f"Erreur lors de l'appel API: {e}")
+            raise RuntimeError(f"Error during API call : {e}")
 
 # Copy from v0.2.4
 class utils:
@@ -261,7 +261,7 @@ class Clients :
     ollama = Client("", "http://localhost:11434/v1")
 
     kimi_code = Client("KIMI_CODE_API_KEY", "https://api.kimi.com/coding/v1",
-        default_headers={"User-Agent": "RooCode/3.30.3","HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline","X-Title": "Roo Code"}
+        default_headers={"User-Agent": "RooCode/3.53.0","HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline","X-Title": "Roo Code"}
     )
 
 class VeniceRequest(Request):
@@ -438,8 +438,8 @@ def image_to_base64(path: str) -> str:
 
 @staticmethod
 def handle_streaming(request:Request, client:Client, model:str, messages:list[dict], API_KEY:str=None):
-    assert isinstance(request, Request), "Type de `request` pas bon !"
-    assert isinstance(client, Client), "Type de `client` pas bon !"
+    assert isinstance(request, Request), "Incorrect request type !"
+    assert isinstance(client, Client), "Not a good type of client !"
 
     response = request.make(
         client=client,
@@ -762,7 +762,7 @@ class agent_base :
         return token
     
     def __call__(self, user_prompt:str, temporary_history=None):
-        assert type(user_prompt) == dict, "user_prompt doit être un dictionnaire !"
+        assert type(user_prompt) == dict, "user_prompt must be a dictionary !"
         
         if temporary_history : # Si on donne un historique temporaire on fait qu'une requête
             single_request = True

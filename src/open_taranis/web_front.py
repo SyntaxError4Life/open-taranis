@@ -1,8 +1,14 @@
 import open_taranis as T
 
 def create_fn_gradio(Agent:T.agent_base):
+    
+    last_error = None
+    for args in [("test", True), ("test", True, None), ("test", True, None, None)]:
+        result = Agent.manage_token_yield(*args)
+        if result[:2] != args[:2]:
+            last_error = f"agent_base.manage_token_yield need to return the token and if_thinking !\nWhat the test went through : `{args}` and what the agent code gives : {result}"
 
-    assert Agent.manage_token_yield("test", True) == ("test", True), "agent_base.manage_token_yield need to return the token and if thinking !"
+    assert last_error is None, last_error
     
         # Gradio chat function
         #   Gradio sends:  message, history

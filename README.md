@@ -25,22 +25,26 @@ For last version
 ```python
 import open_taranis as T
 
-client = T.clients.openrouter() # API_KEY in env_var
+client = T.Clients.openrouter # API_KEY in env_var
 
-messages = [
-    T.create_user_prompt("Tell me about yourself")
-]
-
-stream = T.clients.openrouter_request(
-    client=client,
-    messages=messages,
-    model="nvidia/nemotron-3-nano-30b-a3b:free", 
+request = T.Request(
+    tools=None, tool_choice="auto",
+    temperature=0.4,
+    # and others....
 )
 
 print("assistant : ",end="")
-for token, tool, tool_bool in T.handle_streaming(stream) : 
-    if token :
-        print(token, end="")
+for token, is_thinking, tools, tool_bool, meta in T.handle_streaming(
+    request=request,
+    client=client,
+    model="nvidia/nemotron-3-nano-30b-a3b:free",
+    messages=[T.create.user_prompt("Tell me about yourself")],
+    API_KEY=None
+) : 
+    # You can add `if not is_thinking :` to see only the reals tokens
+    print(token, end="", flush=True)
+
+print(f"\n\n{meta}")
 ```
 </details> 
 
@@ -51,35 +55,41 @@ import open_taranis as T
 
 class Agent(T.agent_base):
     def __init__(self):
-        super().__init__()
+        super().__init__(yield_thinking=False) # If you want to return the reasoning
 
-        self.client = T.clients.openrouter()
-        self._system_prompt = [T.create_system_prompt(
+        self.client = T.Clients.openrouter
+        self._system_prompt = [T.create.system_prompt(
             "You're an agent nammed **Taranis** !"
         )]
+        self.request_profil = T.Request() # Useful for highly customized clients like Venice.ai
 
 
-    def create_stream(self):
-        return T.clients.openrouter_request(
-            client=self.client,
-            messages=self._system_prompt+self.messages,
-            model="nvidia/nemotron-3-nano-30b-a3b:free"
+    def create_stream(self, history):
+        return T.handle_streaming(
+            self.request_profil,
+
+            self.client,
+            model="nvidia/nemotron-3-nano-30b-a3b:free",
+            messages= self._system_prompt + history # Most important !
         )
-
+    
+    def manage_token_yield(self, token, is_thinking = None, meta = None, tool_calls = None):
+        return token, meta # You can customize what the agent returns
+    
     def manage_messages(self):
         self.messages = self.messages[-12:] # Each turn have 1 user and 1 assistant
 
 My_agent = Agent()
 
 while True :
-    prompt = input("user : ")
+    prompt = T.create.user_prompt(input("user : "))
 
     print("\n\nagent : ", end="")
 
-    for t in My_agent(prompt):
+    for t, meta in My_agent(prompt):
         print(t, end="", flush=True)
     
-    print("\n\n","="*60,"\n")
+    print(f"\n\n{meta}\n","="*60,"\n")
 ```
 </details>
 
@@ -110,7 +120,9 @@ gr.ChatInterface(
     fn=W.create_fn_gradio(Gradio_agent()),
     title="Open-taranis Agent"
 ).launch()
-``` 
+```
+Here we use a temporary history provided with each request via `Agent(user_prompt=...., temporary_history=messages)`, so it is natively supported for concurrency (no persistent memory in the object).
+
 </details>  
 
 ---
@@ -119,18 +131,13 @@ gr.ChatInterface(
 
 - `taranis help` : in the name...
 - `taranis update` : upgrade the framework
-- `taranis open` : open the TUI
-
-### The TUI :
-![TUI](img/TUI.png)
-
-- `/help` to start
 
 ## Documentation :
 
 - [Base of the docs](https://zanomega.com/open-taranis/)
 
 Available in [French](https://zanomega.com/open-taranis/fr/)
+**Soon**
 
 ## Roadmap
 
@@ -138,7 +145,7 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 - [X] v0.0.x: Add and confirm other API providers (in the cloud, not locally)
 - [X] v0.1.x: Functionality verifications in [examples](https://github.com/SyntaxError4Life/open-taranis/blob/main/examples/)
 - [X] v0.2.x: Add features for **logic-only coding** approach, start with `agent_base`
-- [X] v0.3.x: Add a full agent in **TUI** and upgrade web client **deployments**
+- [X] v0.3.x: **Complete** rewrite + Add proper **documentation** and improved deployments
 - [ ] v0.4.x: Improving support for **local AI deployment**
 - The rest will follow soon.
 
@@ -172,7 +179,8 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 <details><summary><b>v0.3.x : The restart</b></summary>
 
 - **v0.3.0** : **Rewrite all** the code from scratch (without AI) to **improve everything**
-- **v0.3.1 (future)** : Add a **built-in agent** in the **TUI** + full doc in french and english
+- **v0.3.1** : The **TUI project** with **integrated agent** has been removed to focus on the **framework (useful code)**.
+- **v0.3.2 (future)** : Add features for **coding [MCP](https://wikipedia.org/wiki/Model_Context_Protocol) servers and clients**
 </details>   
 
 
