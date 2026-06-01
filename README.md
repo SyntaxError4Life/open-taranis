@@ -193,4 +193,4 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 ## Links
 
 - [PyPI](https://pypi.org/project/open-taranis/)
-- [GitHub Repository](https://github.com/SyntaxError4Life/open-taranis)
+- [GitHub Repository](https://github.com/SyntaxError4Life/open-taranis) 
