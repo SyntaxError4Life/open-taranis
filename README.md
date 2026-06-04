@@ -179,7 +179,7 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 <details><summary><b>v0.3.x : The restart</b></summary>
 
 - **v0.3.0** : **Rewrite all** the code from scratch (without AI) to **improve everything**
-- **v0.3.1** : The **TUI project** with **integrated agent** has been removed to focus on the **framework (useful code)**.
+- **v0.3.1** : The **TUI project** with **integrated agent** has been removed to focus on the **framework (useful code)**. 
 - **v0.3.2 (future)** : Add features for **coding [MCP](https://wikipedia.org/wiki/Model_Context_Protocol) servers and clients**
 </details>   
 
