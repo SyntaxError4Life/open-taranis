@@ -1,4 +1,4 @@
-import open_taranis as T
+import open_taranis  as T
 
 def create_fn_gradio(Agent:T.agent_base):
      

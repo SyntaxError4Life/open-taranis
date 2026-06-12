@@ -1,4 +1,4 @@
-import open_taranis as T
+import open_taranis  as T
 
 import subprocess
 import sys

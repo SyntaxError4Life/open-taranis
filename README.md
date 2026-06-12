@@ -1,8 +1,6 @@
 # open-taranis
 
-Python framework for AI agents logic-only coding with streaming, tool calls, and multi-LLM provider support.
-
-Only the **"fairly stable"** versions are published on PyPi, but to get the latest experimental versions, clone this repository and install it !
+Python library for AI agents logic-only coding with streaming, tool calls, and multi-LLM provider support.
 
 ## Installation
 
@@ -130,7 +128,7 @@ Here we use a temporary history provided with each request via `Agent(user_promp
 ## Use the commands :
 
 - `taranis help` : in the name...
-- `taranis update` : upgrade the framework
+- `taranis update` : upgrade the library
 
 ## Documentation :
 
@@ -164,7 +162,7 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 - **v0.1.2** : Fixed a display bug in the **web_front** and experimentally added **ollama as a backend**
 - **v0.1.3** : Fixed the memory reset in the **web_front** and remove **ollama module** for **openai front** (work 100 times better)
 - **v0.1.4** : Fixed `web_front` for native use on huggingface, as well as `handle_streaming` which had tool retrieval issues
-- **v0.1.7** : Added a **TUI** and **commands**, detection of **env variables** (API keys) and tools in the framework
+- **v0.1.7** : Added a **TUI** and **commands**, detection of **env variables** (API keys) and tools in the library
 </details>   
 
 <details><summary><b>v0.2.x : Agents</b></summary>
@@ -179,7 +177,7 @@ Available in [French](https://zanomega.com/open-taranis/fr/)
 <details><summary><b>v0.3.x : The restart</b></summary>
 
 - **v0.3.0** : **Rewrite all** the code from scratch (without AI) to **improve everything**
-- **v0.3.1** : The **TUI project** with **integrated agent** has been removed to focus on the **framework (useful code)**.
+- **v0.3.1** : The **TUI project** with **integrated agent** has been removed to focus on the **library (useful code)**.
 - **v0.3.2 (future)** : Add features for **coding [MCP](https://wikipedia.org/wiki/Model_Context_Protocol) servers and clients**
 </details>   
 

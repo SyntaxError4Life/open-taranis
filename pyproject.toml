@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "open-taranis"
-version = "0.3.0"
-description = "Python framework for LLM/VLM with logic-only coding with streaming, tool calls, and multi-LLM provider support"
+version = "0.3.2"
+description = "Python library for LLM/VLM with logic-only coding with streaming, tool calls, and multi-LLM provider support"
 authors = [{name = "SyntaxError4Life", email = "contact@zanomega.com"}]
 dependencies = ["requests", "packaging", "bs4"]
 readme = "README.md"

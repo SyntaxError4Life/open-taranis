@@ -6,21 +6,16 @@ import os
 import re
 import time
  
-class vars :
-    BRAVE_API = None
-
 def brave_research(web_request: str, count: int, country: str):
     """
     - country : "US', "FR"...
     - count recommended : 5 (max 8)
     """
-    if vars.BRAVE_API :
-        api = vars.BRAVE_API
-    else :
-        try:
-            api = os.environ['BRAVE_API']
-        except KeyError:
-            raise ValueError("Critical error: The BRAVE_API environment variable is missing.")
+    
+    try:
+        api = os.environ['BRAVE_API']
+    except KeyError:
+        raise ValueError("Critical error: The BRAVE_API environment variable is missing.")
 
     if count > 8:
         count = 8
@@ -61,6 +56,7 @@ def brave_research(web_request: str, count: int, country: str):
 def fast_scraping(url, timeout=10):
     """Quick scraping function, retrieves only the text from the given URL"""
     result = ""
+    max_display = 100
 
     try:
         headers = {
@@ -89,13 +85,14 @@ def fast_scraping(url, timeout=10):
         else:
             result = "Scraping failed: No content found."
 
+
     except requests.exceptions.Timeout:
         result = "Request failed: Timeout."
     except requests.exceptions.RequestException as e:
-        msg = str(e)[:50] + "..." if len(str(e)) > 50 else str(e)
+        msg = str(e)[:max_display] + "..." if len(str(e)) > max_display else str(e)
         result = f"Request failed: {msg}"
     except Exception as e:
-        msg = str(e)[:50] + "..." if len(str(e)) > 50 else str(e)
+        msg = str(e)[:max_display] + "..." if len(str(e)) > max_display else str(e)
         result = f"Scraping failed: {msg}"
 
     if not isinstance(result, str):
