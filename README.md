@@ -1,3 +1,15 @@
+---
+---
+
+**This project is currently being completely rebuilt from scratch.**
+**The entire logic will be reworked using a more optimized, compiled backend.**
+
+**Projects based on the library in its current state are still planned, however !!**
+
+---
+---
+
+
 # open-taranis
 
 Python framework for AI agents logic-only coding with streaming, tool calls, and multi-LLM provider support.
