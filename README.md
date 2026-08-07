@@ -9,13 +9,6 @@
 ---
 ---
 
-
-# open-taranis
-
-Python framework for AI agents logic-only coding with streaming, tool calls, and multi-LLM provider support.
-
-Only the **"fairly stable"** versions are published on PyPi, but to get the latest experimental versions, clone this repository and install it !
-
 ## Installation
 
 ```bash
