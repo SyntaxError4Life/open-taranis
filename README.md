@@ -2,7 +2,7 @@
 ---
 
 **This project is currently being completely rebuilt from scratch.**
-**The entire logic will be reworked using a more optimized, compiled backend.**
+**The entire logic will be reworked.**
 
 **Projects based on the library in its current state are still planned, however !!**
 
